@@ -16,5 +16,10 @@ namespace Microsoft.Web.LibraryManager.Vsix.UI.Controls
         {
             return AutomationControlType.Text;
         }
+
+        protected override string GetAccessKeyCore()
+        {
+            return string.Empty;
+        }
     }
 }

@@ -121,6 +121,7 @@ namespace Microsoft.Web.LibraryManager.Vsix.UI.Controls
                     if (SelectedItem != null)
                     {
                         CommitSelectionAndMoveFocus();
+                        e.Handled = true;
                     }
                     break;
                 case Key.Enter:

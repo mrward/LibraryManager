@@ -18,7 +18,6 @@
     <Grid>
         <!-- Text Entry -->
         <TextBox x:Name="LibrarySearchBox"
-                 AutomationProperties.Name="{x:Static resources:Text.Library}"
                  Text="{Binding ElementName=ThisControl,
                                 Path=Text,
                                 Mode=TwoWay,
