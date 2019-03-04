@@ -87,6 +87,8 @@
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="Center"
                                     DockPanel.Dock="Right"
+                                    Focusable="True"
+                                    AutomationProperties.Name="{Binding Converter={StaticResource HintTextConverter}}"
                                     DataContext="{Binding ElementName=ProviderComboBox, Path=SelectedItem}">
                     <imaging:CrispImage.Style>
                         <Style TargetType="{x:Type imaging:CrispImage}">
