@@ -54,7 +54,6 @@
   <ItemGroup>
     <Compile Include="Commands\InstallLibraryCommand.cs" />
     <Compile Include="Shared\DefaultSolutionEvents.cs" />
-    <Compile Include="UI\Converters\RemoveCharacterConverter.cs" />
     <Compile Include="UI\Extensions\RemoveCharacterExtension.cs" />
     <Compile Include="UI\InstallDialogProvider.cs" />
     <Compile Include="UI\Controls\BindingProxy.cs" />
