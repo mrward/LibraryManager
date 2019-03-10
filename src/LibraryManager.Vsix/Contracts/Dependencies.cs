@@ -8,6 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using Microsoft.Web.LibraryManager.Providers.Unpkg;
+using Microsoft.Web.LibraryManager.Providers.Cdnjs;
+using Microsoft.Web.LibraryManager.Providers.jsDelivr;
+using Microsoft.Web.LibraryManager.Providers.FileSystem;
 
 namespace Microsoft.Web.LibraryManager.Vsix
 {
@@ -58,6 +62,14 @@ namespace Microsoft.Web.LibraryManager.Vsix
             }
 
             this.SatisfyImportsOnce();
+
+            _providerFactories = new IProviderFactory[]
+            {
+                new CdnjsProviderFactory(),
+                new FileSystemProviderFactory(),
+                new JsDelivrProviderFactory(),
+                new UnpkgProviderFactory()
+            };
 
             foreach (IProviderFactory factory in _providerFactories)
             {

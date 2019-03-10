@@ -1,5 +1,40 @@
 ﻿<ExtensionModel>
     <Runtime>
         <Import assembly="MonoDevelop.LibraryManager.dll" />
+        <Import file="Microsoft.Web.LibraryManager.Contracts.dll" />
+        <Import file="Microsoft.Web.LibraryManager.dll" />
     </Runtime>
+
+    <!--<Extension path="/MonoDevelop/Ide/Composition">
+        <Assembly file="Microsoft.Web.LibraryManager.dll" />
+        <Assembly file="MonoDevelop.LibraryManager.dll" />
+    </Extension>-->
+
+    <Extension path="/MonoDevelop/Ide/Commands">
+        <Category _name="Library Manager" id="LibraryManager">
+            <Command
+                id="MonoDevelop.LibraryManager.Commands.ManageLibraries"
+                _description=""
+                _label="Manage Client-Side Libraries..."
+                defaultHandler="MonoDevelop.LibraryManager.Commands.ManageLibrariesHandler" />
+        </Category>
+    </Extension>
+
+    <Extension path="/MonoDevelop/Ide/MainMenu/Project">
+        <SeparatorItem insertafter="MonoDevelop.Ide.Commands.ProjectCommands.AddReference" />
+        <CommandItem id="MonoDevelop.LibraryManager.Commands.ManageLibraries" />
+    </Extension>
+
+    <Extension path="/MonoDevelop/Ide/ContextMenu/ProjectPad">
+        <Condition id="ItemType" value="DotNetProject">
+            <SeparatorItem
+                id="ManageLibrariesSeparator"
+                insertafter="MonoDevelop.Ide.Commands.ProjectCommands.Unload"
+                insertbefore="MonoDevelop.Ide.Commands.ProjectCommands.CustomCommandList" />
+            <CommandItem
+                id="MonoDevelop.LibraryManager.Commands.ManageLibraries"
+                insertafter="ManageLibrariesSeparator"
+                insertbefore="MonoDevelop.Ide.Commands.ProjectCommands.CustomCommandList" />
+        </Condition>
+    </Extension>
 </ExtensionModel>

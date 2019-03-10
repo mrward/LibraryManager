@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
 using Microsoft.Web.LibraryManager.Contracts;
+using MonoDevelop.Projects;
 using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.Web.LibraryManager.Vsix

@@ -29,14 +29,42 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AddinInfo.cs" />
+    <Compile Include="Commands\ManageLibrariesHandler.cs" />
+    <Compile Include="..\LibraryManager.Vsix\Constants.cs">
+      <Link>Constants.cs</Link>
+    </Compile>
+    <Compile Include="..\LibraryManager.Vsix\Contracts\Dependencies.cs">
+      <Link>Contracts\Dependencies.cs</Link>
+    </Compile>
+    <Compile Include="..\LibraryManager.Vsix\Contracts\HostInteraction.cs">
+      <Link>Contracts\HostInteraction.cs</Link>
+    </Compile>
+    <Compile Include="..\LibraryManager.Vsix\Contracts\PerProjectLogger.cs">
+      <Link>Contracts\PerProjectLogger.cs</Link>
+    </Compile>
+    <Compile Include="..\LibraryManager.Vsix\Contracts\Logger.cs">
+      <Link>Contracts\Logger.cs</Link>
+    </Compile>
+    <Compile Include="Shared\VsHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\LibraryManager.addin.xml">
       <LogicalName>LibraryManager.addin.xml</LogicalName>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LibraryManager\Microsoft.Web.LibraryManager.csproj">
+      <Project>{707356DD-96B9-49F6-AF2A-9D23B857A1E2}</Project>
+      <Name>Microsoft.Web.LibraryManager</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LibraryManager.Contracts\Microsoft.Web.LibraryManager.Contracts.csproj">
+      <Project>{FF466454-426B-4AD7-8B00-D50011BE716F}</Project>
+      <Name>Microsoft.Web.LibraryManager.Contracts</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
