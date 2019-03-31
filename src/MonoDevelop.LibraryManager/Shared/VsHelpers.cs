@@ -4,12 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Web.LibraryManager.Contracts;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
+using MonoDevelop.Ide.Gui.Pads;
+using MonoDevelop.Ide.Gui.Pads.ProjectPad;
 using MonoDevelop.Projects;
 
 namespace Microsoft.Web.LibraryManager.Vsix
@@ -37,77 +40,63 @@ namespace Microsoft.Web.LibraryManager.Vsix
                 await Runtime.RunInMainThread(async () =>
                 {
                     var fileInfo = new FileOpenInformation(configFilePath);
-                    await IdeApp.Workbench.OpenDocument(fileInfo);
-                });
+                    await IdeApp.Workbench.OpenDocument(fileInfo).ConfigureAwait(false);
+                }).ConfigureAwait(false);
             }
         }
 
-        //internal static async Task<ProjectItem> GetSelectedItemAsync()
-        //{
-        //     ProjectItem projectItem = null;
+        internal static Task<ProjectFolder> GetSelectedItemAsync()
+        {
+            var pad = IdeApp.Workbench.Pads.FirstOrDefault(p => p.Id == "ProjectPad");
+            var solutionPad = pad?.Content as SolutionPad;
+            if (solutionPad == null)
+            {
+                return null;
+            }
 
-        //    if (DTE?.SelectedItems.Count == 1)
-        //    {
-        //        SelectedItem selectedItem = VsHelpers.DTE.SelectedItems.Item(1);
-        //        projectItem = selectedItem?.ProjectItem;
-        //    }
+            ProjectFolder folder = null;
+            if (!solutionPad.TreeView.MultipleNodesSelected())
+            {
+                var node = solutionPad.TreeView.GetSelectedNode();
+                folder = node.DataItem as ProjectFolder;
+            }
 
-        //    return projectItem;
-        //}
+            return Task.FromResult(folder);
+        }
 
-        //public static async Task<Project> GetProjectOfSelectedItemAsync()
-        //{
-        //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+        public static Task<Project> GetProjectOfSelectedItemAsync()
+        {
+            return Task.FromResult(IdeApp.ProjectOperations.CurrentSelectedProject);
+        }
 
-        //    Project project = null;
+        public static async Task AddFileToProjectAsync(this Project project, string file, string itemType = null)
+        {
+            if (IsCapabilityMatch(project, Constants.DotNetCoreWebCapability))
+            {
+                return;
+            }
 
-        //    if (DTE?.SelectedItems.Count == 1)
-        //    {
-        //        SelectedItem selectedItem = DTE.SelectedItems.Item(1);
-        //        project = selectedItem.Project ?? selectedItem.ProjectItem?.ContainingProject;
-        //    }
+            try
+            {
+                await Runtime.RunInMainThread (async () =>
+                {
+                    project.AddFile(file, BuildAction.None);
+                    await project.SaveAsync(new ProgressMonitor()).ConfigureAwait(false);
+                }).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogEvent(ex.ToString(), LogLevel.Error);
+                System.Diagnostics.Debug.Write(ex);
+            }
+        }
 
-        //    return project;
-        //}
-
-        //public static async Task AddFileToProjectAsync(this Project project, string file, string itemType = null)
-        //{
-        //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-        //    if (IsCapabilityMatch(project, Constants.DotNetCoreWebCapability))
-        //    {
-        //        return;
-        //    }
-
-        //    try
-        //    {
-        //        if (DTE.Solution.FindProjectItem(file) == null)
-        //        {
-        //            ProjectItem item = project.ProjectItems.AddFromFile(file);
-
-        //            if (string.IsNullOrEmpty(itemType) || project.IsKind(Constants.WebsiteProject))
-        //            {
-        //                return;
-        //            }
-
-        //            item.Properties.Item("ItemType").Value = "None";
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Logger.LogEvent(ex.ToString(), LogLevel.Error);
-        //        System.Diagnostics.Debug.Write(ex);
-        //    }
-        //}
-
-        //public static async Task AddFilesToProjectAsync(Project project, IEnumerable<string> files, Action<string, LogLevel> logAction, CancellationToken cancellationToken)
-        //{
-        //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-        //    if (project == null || IsCapabilityMatch(project, Constants.DotNetCoreWebCapability))
-        //    {
-        //        return;
-        //    }
+        public static async Task AddFilesToProjectAsync(Project project, IEnumerable<string> files, Action<string, LogLevel> logAction, CancellationToken cancellationToken)
+        {
+            if (project == null || IsCapabilityMatch(project, Constants.DotNetCoreWebCapability))
+            {
+                return;
+            }
 
         //    if (project.IsKind(Constants.WebsiteProject))
         //    {
@@ -135,8 +124,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
 
         //        await AddFilesToHierarchyAsync(hierarchy, files, logAction, cancellationToken);
         //    }
-
-        //}
+        }
 
         public static Task<string> GetRootFolderAsync(this Project project)
         {

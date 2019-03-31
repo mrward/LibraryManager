@@ -9,49 +9,44 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
 using Microsoft.VisualStudio.TaskStatusCenter;
 using Microsoft.Web.LibraryManager.Contracts;
 using Microsoft.Web.LibraryManager.LibraryNaming;
 using Task = System.Threading.Tasks.Task;
+using MonoDevelop.Projects;
 
 namespace Microsoft.Web.LibraryManager.Vsix
 {
     [Export(typeof(ILibraryCommandService))]
     internal class LibraryCommandService : ILibraryCommandService, IDisposable
     {
-        [Import(typeof(ITaskStatusCenterService))]
-        internal ITaskStatusCenterService TaskStatusCenterServiceInstance;
-
         private CancellationTokenSource _linkedCancellationTokenSource;
         private CancellationTokenSource _internalCancellationTokenSource;
         private Task _currentOperationTask;
-        private DefaultSolutionEvents _solutionEvents;
         private object _lockObject = new object();
 
         [ImportingConstructor]
         public LibraryCommandService()
         {
-            _solutionEvents = new DefaultSolutionEvents();
-            _solutionEvents.BeforeCloseSolution += OnBeforeCloseSolution;
-            _solutionEvents.BeforeCloseProject += OnBeforeCloseProject;
-            _solutionEvents.BeforeUnloadProject += OnBeforeUnloadProject;
+            //_solutionEvents.BeforeCloseSolution += OnBeforeCloseSolution;
+            //_solutionEvents.BeforeCloseProject += OnBeforeCloseProject;
+            //_solutionEvents.BeforeUnloadProject += OnBeforeUnloadProject;
         }
 
-        private void OnBeforeUnloadProject(object sender, ParamEventArgs e)
-        {
-            CancelOperation();
-        }
+        //private void OnBeforeUnloadProject(object sender, ParamEventArgs e)
+        //{
+        //    CancelOperation();
+        //}
 
-        private void OnBeforeCloseProject(object sender, ParamEventArgs e)
-        {
-            CancelOperation();
-        }
+        //private void OnBeforeCloseProject(object sender, ParamEventArgs e)
+        //{
+        //    CancelOperation();
+        //}
 
-        private void OnBeforeCloseSolution(object sender, ParamEventArgs e)
-        {
-            CancelOperation();
-        }
+        //private void OnBeforeCloseSolution(object sender, ParamEventArgs e)
+        //{
+        //    CancelOperation();
+        //}
 
         public bool IsOperationInProgress
         {
@@ -95,7 +90,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
                 => UninstallLibraryAsync(configFilePath, libraryName, version, providerId, internalToken), taskTitle, errorMessage);
         }
 
-        public async Task CleanAsync(ProjectItem configProjectItem, CancellationToken cancellationToken)
+        public async Task CleanAsync(ProjectFile configProjectItem, CancellationToken cancellationToken)
         {
             string taskTitle = GetTaskTitle(OperationType.Clean, string.Empty);
 
@@ -133,7 +128,6 @@ namespace Microsoft.Web.LibraryManager.Vsix
             catch (Exception ex)
             {
                 Logger.LogEvent(errorMessage + Environment.NewLine + ex.Message, LogLevel.Operation);
-                Telemetry.TrackException(nameof(RunTaskAsync), ex);
             }
         }
 
@@ -153,7 +147,6 @@ namespace Microsoft.Web.LibraryManager.Vsix
             catch (Exception ex)
             {
                 Logger.LogEvent(LibraryManager.Resources.Text.Restore_OperationFailed + Environment.NewLine + ex.Message, LogLevel.Operation);
-                Telemetry.TrackException(nameof(GetManifestFromConfigAsync), ex);
 
                 return null;
             }
@@ -161,7 +154,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
             return manifests;
         }
 
-        private async Task CleanLibrariesAsync(ProjectItem configProjectItem, CancellationToken cancellationToken)
+        private async Task CleanLibrariesAsync(ProjectFile configProjectItem, CancellationToken cancellationToken)
         {
             Logger.LogEventsHeader(OperationType.Clean, string.Empty);
 
@@ -170,7 +163,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
 
-                string configFileName = configProjectItem.FileNames[1];
+                string configFileName = configProjectItem.FilePath;
                 var dependencies = Dependencies.FromConfigFile(configFileName);
                 Project project = VsHelpers.GetDTEProjectFromConfig(configFileName);
 
@@ -186,7 +179,6 @@ namespace Microsoft.Web.LibraryManager.Vsix
                         sw.Stop();
                         AddErrorsToErrorList(project?.Name, configFileName, validationResults);
                         Logger.LogErrorsSummary(validationResults, OperationType.Clean);
-                        Telemetry.LogErrors($"FailValidation_{OperationType.Clean}", validationResults);
                     }
                     else
                     {
@@ -196,14 +188,12 @@ namespace Microsoft.Web.LibraryManager.Vsix
                         sw.Stop();
                         AddErrorsToErrorList(project?.Name, configFileName, results);
                         Logger.LogEventsSummary(results, OperationType.Clean, sw.Elapsed);
-                        Telemetry.LogEventsSummary(results, OperationType.Clean, sw.Elapsed);
                     }
                 }
             }
             catch (OperationCanceledException ex)
             {
                 Logger.LogEvent(LibraryManager.Resources.Text.Clean_OperationCancelled, LogLevel.Task);
-                Telemetry.TrackException($@"{OperationType.Clean}Cancelled", ex);
             }
         }
 
@@ -233,7 +223,6 @@ namespace Microsoft.Web.LibraryManager.Vsix
                         swLocal.Stop();
                         AddErrorsToErrorList(project?.Name, manifest.Key, validationResults);
                         Logger.LogErrorsSummary(validationResults, OperationType.Restore, false);
-                        Telemetry.LogErrors($"FailValidation_{OperationType.Restore}", validationResults);
                     }
                     else
                     {
@@ -243,7 +232,6 @@ namespace Microsoft.Web.LibraryManager.Vsix
                         swLocal.Stop();
                         AddErrorsToErrorList(project?.Name, manifest.Key, results);
                         Logger.LogEventsSummary(results, OperationType.Restore, swLocal.Elapsed, false);
-                        Telemetry.LogEventsSummary(results, OperationType.Restore, swLocal.Elapsed);
                     }
                 }
 
@@ -253,7 +241,6 @@ namespace Microsoft.Web.LibraryManager.Vsix
             catch (OperationCanceledException ex)
             {
                 Logger.LogEvent(LibraryManager.Resources.Text.Restore_OperationCancelled, LogLevel.Task);
-                Telemetry.TrackException($@"{OperationType.Restore}Cancelled", ex);
             }
         }
 
@@ -296,13 +283,10 @@ namespace Microsoft.Web.LibraryManager.Vsix
                 {
                     Logger.LogEventsSummary(new List<ILibraryOperationResult> { result }, OperationType.Uninstall, sw.Elapsed);
                 }
-
-                Telemetry.LogEventsSummary(new List<ILibraryOperationResult> { result }, OperationType.Uninstall, sw.Elapsed);
             }
             catch (OperationCanceledException ex)
             {
                 Logger.LogEvent(string.Format(LibraryManager.Resources.Text.Uninstall_LibraryCancelled, libraryId), LogLevel.Task);
-                Telemetry.TrackException($@"{OperationType.Uninstall}Cancelled", ex);
             }
         }
 
@@ -328,8 +312,8 @@ namespace Microsoft.Web.LibraryManager.Vsix
 
         private void AddErrorsToErrorList(string projectName, string configFile, IEnumerable<ILibraryOperationResult> results)
         {
-            var errorList = new ErrorList(projectName, configFile);
-            errorList.HandleErrors(results);
+            //var errorList = new ErrorList(projectName, configFile);
+            //errorList.HandleErrors(results);
         }
 
         private async Task AddFilesToProjectAsync(string configFilePath, Project project, IEnumerable<ILibraryOperationResult> results, CancellationToken cancellationToken)
@@ -391,7 +375,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
             }
 
             _currentOperationTask = null;
-            _solutionEvents.Dispose();
+            //_solutionEvents.Dispose();
         }
 
         public void Dispose()

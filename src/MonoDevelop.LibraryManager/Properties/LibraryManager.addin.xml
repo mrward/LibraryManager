@@ -17,6 +17,11 @@
                 _description=""
                 _label="Manage Client-Side Libraries..."
                 defaultHandler="MonoDevelop.LibraryManager.Commands.ManageLibrariesHandler" />
+            <Command
+                id="MonoDevelop.LibraryManager.Commands.InstallLibrary"
+                _description=""
+                _label="Client-Side Library..."
+                defaultHandler="MonoDevelop.LibraryManager.Commands.InstallLibraryHandler" />
         </Category>
     </Extension>
 
@@ -35,6 +40,20 @@
                 id="MonoDevelop.LibraryManager.Commands.ManageLibraries"
                 insertafter="ManageLibrariesSeparator"
                 insertbefore="MonoDevelop.Ide.Commands.ProjectCommands.CustomCommandList" />
+        </Condition>
+    </Extension>
+
+    <Extension path="/MonoDevelop/Ide/ContextMenu/ProjectPad/Add">
+        <Condition id="ItemType" value="DotNetProject">
+            <CommandItem
+                id="MonoDevelop.LibraryManager.Commands.InstallLibrary"
+                insertafter="MonoDevelop.Ide.Commands.ProjectCommands.AddFiles"
+                insertbefore="MonoDevelop.WebReferences.WebReferenceCommands.Add" />
+        </Condition>
+        <Condition id="ItemType" value="ProjectFolder">
+            <CommandItem
+                id="MonoDevelop.LibraryManager.Commands.InstallLibrary"
+                insertafter="MonoDevelop.Ide.Commands.ProjectCommands.NewFolder" />
         </Condition>
     </Extension>
 </ExtensionModel>

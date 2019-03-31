@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using EnvDTE;
+using MonoDevelop.Projects;
 
 namespace Microsoft.Web.LibraryManager.Vsix
 {
@@ -20,7 +20,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
         /// <param name="configProjectItem">ProjectItem for the manifest file (libman.json)</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task CleanAsync(ProjectItem configProjectItem, CancellationToken cancellationToken);
+        Task CleanAsync(ProjectFile configProjectItem, CancellationToken cancellationToken);
 
         /// <summary>
         /// Restore libraries from multiple manifest files (libman.json)

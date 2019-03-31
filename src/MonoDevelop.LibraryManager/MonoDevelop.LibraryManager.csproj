@@ -50,6 +50,21 @@
       <Link>Contracts\Logger.cs</Link>
     </Compile>
     <Compile Include="Shared\VsHelpers.cs" />
+    <Compile Include="Commands\InstallLibraryHandler.cs" />
+    <Compile Include="UI\InstallDialog.cs" />
+    <Compile Include="UI\InstallDialog.UI.cs">
+      <DependentUpon>InstallDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\LibraryManager.Vsix\Shared\ILibraryCommandService.cs">
+      <Link>Shared\ILibraryCommandService.cs</Link>
+    </Compile>
+    <Compile Include="..\LibraryManager.Vsix\Shared\LibraryCommandService.cs">
+      <Link>Shared\LibraryCommandService.cs</Link>
+    </Compile>
+    <Compile Include="UI\Models\InstallDialogViewModel.cs" />
+    <Compile Include="Tasks\TaskStatusCenterServiceInstance.cs" />
+    <Compile Include="Tasks\ITaskHandler.cs" />
+    <Compile Include="Tasks\TaskHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\LibraryManager.addin.xml">
