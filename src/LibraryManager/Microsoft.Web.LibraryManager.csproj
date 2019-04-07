@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageTags>library, package, client-side</PackageTags>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Microsoft.Web.LibraryManager.xml</DocumentationFile>
@@ -11,7 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="System.ValueTuple" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
+    <!--<PackageReference Include="System.ValueTuple" Condition="'$(TargetFramework)' != 'netstandard2.0'" />-->
     <ProjectReference Include="..\LibraryManager.Contracts\Microsoft.Web.LibraryManager.Contracts.csproj" />
     <Reference Include="System.ComponentModel.Composition" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
     <Reference Include="System.Net.Http" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
