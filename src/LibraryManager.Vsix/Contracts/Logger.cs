@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Web.LibraryManager.Contracts;
 using Microsoft.Web.LibraryManager.Logging;
+using MonoDevelop.Core;
+using MonoDevelop.LibraryManager.UI;
 
 namespace Microsoft.Web.LibraryManager.Vsix
 {
@@ -20,22 +22,22 @@ namespace Microsoft.Web.LibraryManager.Vsix
         {
             try
             {
-                //switch (level)
-                //{
-                //    case LogLevel.Operation:
-                //        LogToOutputWindow(message);
-                //        break;
-                //    case LogLevel.Error:
-                //        LogToActivityLog(message, __ACTIVITYLOG_ENTRYTYPE.ALE_ERROR);
-                //        break;
-                //    case LogLevel.Task:
-                //        LogToStatusBar(message);
-                //        LogToOutputWindow(message);
-                //        break;
-                //    case LogLevel.Status:
-                //        LogToStatusBar(message);
-                //        break;
-                //}
+                switch (level)
+                {
+                    case LogLevel.Operation:
+                        LogToOutputWindow(message);
+                        break;
+                    case LogLevel.Error:
+                        LogErrorToOutputWindow(message);
+                        break;
+                    case LogLevel.Task:
+                        LogToStatusBar(message);
+                        LogToOutputWindow(message);
+                        break;
+                    case LogLevel.Status:
+                        LogToStatusBar(message);
+                        break;
+                }
             }
             catch (Exception ex)
             {
@@ -118,8 +120,10 @@ namespace Microsoft.Web.LibraryManager.Vsix
 
         public static void ClearOutputWindow()
         {
-            // Don't access _outputWindowPane through the property here so that we don't force creation
-        //    ThreadHelper.Generic.BeginInvoke(() => _outputWindowPane?.Clear());
+            Runtime.RunInMainThread (() =>
+            {
+                LibraryManagerOutputPad.LogView?.Clear();
+            });
         }
 
         //private static IVsOutputWindowPane OutputWindowPane
@@ -199,7 +203,12 @@ namespace Microsoft.Web.LibraryManager.Vsix
 
         private static void LogToOutputWindow(object message)
         {
-            //ThreadHelper.Generic.BeginInvoke(() => OutputWindowPane?.OutputString(message + Environment.NewLine));
+            LibraryManagerOutputPad.WriteText(message.ToString());
+        }
+
+        private static void LogErrorToOutputWindow (object message)
+        {
+            LibraryManagerOutputPad.WriteError(message.ToString());
         }
 
         //private static bool EnsurePane()

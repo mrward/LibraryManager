@@ -56,4 +56,15 @@
                 insertafter="MonoDevelop.Ide.Commands.ProjectCommands.NewFolder" />
         </Condition>
     </Extension>
+
+    <Extension path="/MonoDevelop/Ide/Pads">
+        <Pad
+            id="MonoDevelop.LibraryManager.LibraryManagerOutputPad"
+            defaultLayout="*"
+            defaultPlacement="Center Bottom"
+            defaultStatus="AutoHide"
+            icon="md-console"
+            class="MonoDevelop.LibraryManager.UI.LibraryManagerOutputPad"
+            _label="Library Manager Output" />
+    </Extension>
 </ExtensionModel>
