@@ -36,7 +36,7 @@ namespace MonoDevelop.LibraryManager.UI
         Label providerLabel;
         Label libraryLabel;
         ComboBox providerComboBox;
-        SearchTextEntry libraryTextEntry;
+        SearchTextEntryWithCodeCompletion libraryTextEntry;
         RadioButtonGroup radioButtonGroup;
         RadioButton includeAllLibraryFilesRadioButton;
         RadioButton chooseSpecificFilesRadioButton;
@@ -73,7 +73,7 @@ namespace MonoDevelop.LibraryManager.UI
             libraryLabel.Text = GettextCatalog.GetString("Library:");
             libraryHBox.PackStart(libraryLabel);
 
-            libraryTextEntry = new SearchTextEntry();
+            libraryTextEntry = new SearchTextEntryWithCodeCompletion();
             libraryTextEntry.PlaceholderText = GettextCatalog.GetString("Type to search");
             libraryHBox.PackStart(libraryTextEntry, true, true);
 

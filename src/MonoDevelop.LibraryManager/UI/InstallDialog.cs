@@ -37,6 +37,7 @@ namespace MonoDevelop.LibraryManager.UI
     partial class InstallDialog
     {
         InstallDialogViewModel viewModel;
+        int previousLibraryTextEntryLength;
 
         public InstallDialog (
             IDependencies dependencies,
@@ -80,6 +81,19 @@ namespace MonoDevelop.LibraryManager.UI
         void LibraryTextEntryChanged (object sender, EventArgs e)
         {
             viewModel.PackageId = libraryTextEntry.Text;
+
+            // Only search if text has been inserted not deleted.
+            int length = libraryTextEntry.TextLength;
+            if (previousLibraryTextEntryLength < length)
+                PerformLibrarySearch().Ignore();
+
+            previousLibraryTextEntryLength = length;
+        }
+
+        async Task PerformLibrarySearch()
+        {
+            CompletionSet completionSet = await PerformSearch(libraryTextEntry.Text, libraryTextEntry.CaretOffset);
+            libraryTextEntry.UpdateCompletionItems(completionSet);
         }
 
         protected override void Dispose(bool disposing)
@@ -109,6 +123,19 @@ namespace MonoDevelop.LibraryManager.UI
         {
             viewModel.SelectedProvider = (IProvider)providerComboBox.SelectedItem;
             infoPopover.Message = viewModel.SelectedProviderHintMessage;
+        }
+
+        Task<CompletionSet> PerformSearch(string searchText, int caretPosition)
+        {
+            try
+            {
+                return viewModel.SelectedProvider.GetCatalog().GetLibraryCompletionSetAsync(searchText, caretPosition);
+            }
+            catch (InvalidLibraryException)
+            {
+                // Make the warning visible with ex.Message
+                return Task.FromResult<CompletionSet>(default(CompletionSet));
+            }
         }
 
         async Task<bool> IsLibraryInstallationStateValidAsync()

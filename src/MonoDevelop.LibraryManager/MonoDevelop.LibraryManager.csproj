@@ -33,6 +33,7 @@
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AddinInfo.cs" />
@@ -69,6 +70,10 @@
     <Compile Include="Tasks\ITaskHandler.cs" />
     <Compile Include="Tasks\TaskHandler.cs" />
     <Compile Include="UI\LibraryManagerOutputPad.cs" />
+    <Compile Include="UI\SearchEntryWithCodeCompletion.cs" />
+    <Compile Include="UI\CompletionWindowManagerExtensions.cs" />
+    <Compile Include="UI\Models\SearchCompletionDataList.cs" />
+    <Compile Include="UI\Models\SearchCompletionData.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\LibraryManager.addin.xml">
