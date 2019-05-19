@@ -25,21 +25,25 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Web.LibraryManager.Contracts;
 using Microsoft.Web.LibraryManager.Vsix;
+using MonoDevelop.Ide;
 using MonoDevelop.LibraryManager.UI.Models;
 using MonoDevelop.Projects;
-using System.Threading.Tasks;
-using MonoDevelop.Ide;
 
 namespace MonoDevelop.LibraryManager.UI
 {
     partial class InstallDialog
     {
         InstallDialogViewModel viewModel;
+        readonly string configFileName;
         int previousLibraryTextEntryLength;
 
-        public InstallDialog (
+        public InstallDialog(
             IDependencies dependencies,
             ILibraryCommandService libraryCommandService,
             string configFilePath,
@@ -47,6 +51,7 @@ namespace MonoDevelop.LibraryManager.UI
             string rootFolder,
             Project project)
         {
+            this.configFileName = configFilePath;
             Build();
 
             viewModel = new InstallDialogViewModel(dependencies, libraryCommandService, configFilePath, fullPath, rootFolder, project);
@@ -64,11 +69,13 @@ namespace MonoDevelop.LibraryManager.UI
             providerComboBox.SelectionChanged += ProviderComboBoxSelectionChanged;
 
             targetLocationTextEntry.Text = viewModel.DestinationFolder;
+            targetLocationTextEntry.Changed += TargetLocationTextEntryChanged;
+            installButton.Sensitive = !string.IsNullOrEmpty(targetLocationTextEntry.Text);
 
             libraryTextEntry.SetFocus();
         }
 
-        void CancelButtonClicked (object sender, EventArgs e)
+        void CancelButtonClicked(object sender, EventArgs e)
         {
             Close();
         }
@@ -78,7 +85,7 @@ namespace MonoDevelop.LibraryManager.UI
             InstallAsync().Ignore();
         }
 
-        void LibraryTextEntryChanged (object sender, EventArgs e)
+        void LibraryTextEntryChanged(object sender, EventArgs e)
         {
             viewModel.PackageId = libraryTextEntry.Text;
 
@@ -94,6 +101,16 @@ namespace MonoDevelop.LibraryManager.UI
         {
             CompletionSet completionSet = await PerformSearch(libraryTextEntry.Text, libraryTextEntry.CaretOffset);
             libraryTextEntry.UpdateCompletionItems(completionSet);
+        }
+
+        void TargetLocationTextEntryChanged(object sender, EventArgs e)
+        {
+            // Target location text box is pre populated with name of the folder from where the - Add Client-Side Library command was invoked.
+            // If the user clears the field at any point, we should make sure the Install button is disabled till valid folder name is provided.
+            installButton.Sensitive = !string.IsNullOrEmpty(targetLocationTextEntry.Text);
+
+            CompletionSet completionSet = TargetLocationSearch(targetLocationTextEntry.Text, targetLocationTextEntry.CaretOffset);
+            targetLocationTextEntry.UpdateCompletionItems(completionSet);
         }
 
         protected override void Dispose(bool disposing)
@@ -136,6 +153,75 @@ namespace MonoDevelop.LibraryManager.UI
                 // Make the warning visible with ex.Message
                 return Task.FromResult<CompletionSet>(default(CompletionSet));
             }
+        }
+
+        CompletionSet TargetLocationSearch(string searchText, int caretPosition)
+        {
+            Dependencies dependencies = Dependencies.FromConfigFile(configFileName);
+            string cwd = dependencies?.GetHostInteractions().WorkingDirectory;
+
+            IEnumerable<Tuple<string, string>> completions = GetCompletions(cwd, searchText, caretPosition, out Span textSpan);
+
+            var completionSet = new CompletionSet
+            {
+                Start = 0,
+                Length = searchText.Length
+            };
+
+            var completionItems = new List<CompletionItem>();
+
+            foreach (Tuple<string, string> completion in completions)
+            {
+                string insertionText = completion.Item2;
+
+                if (insertionText.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) > -1)
+                {
+                    var completionItem = new CompletionItem
+                    {
+                        DisplayText = completion.Item1,
+                        InsertionText = insertionText,
+                    };
+
+                    completionItems.Add(completionItem);
+                }
+            }
+
+            completionSet.Completions = completionItems.OrderBy(m => m.InsertionText.IndexOf(searchText, StringComparison.OrdinalIgnoreCase));
+
+            return completionSet;
+        }
+
+        IEnumerable<Tuple<string, string>> GetCompletions(string cwd, string value, int caretPosition, out Span span)
+        {
+            span = new Span(0, value.Length);
+            var completions = new List<Tuple<string, string>> ();
+            int index = 0;
+
+            if (value.Contains("/"))
+            {
+                index = value.Length >= caretPosition - 1 ? value.LastIndexOf('/', Math.Max (caretPosition - 1, 0)) : value.Length;
+            }
+
+            string prefix = "";
+
+            if (index > 0)
+            {
+                prefix = value.Substring(0, index + 1);
+                cwd = Path.Combine(cwd, prefix);
+                span = new Span(index + 1, value.Length - index - 1);
+            }
+
+            var directoryInfo = new DirectoryInfo(cwd);
+
+            if (directoryInfo.Exists)
+            {
+                foreach (FileSystemInfo item in directoryInfo.EnumerateDirectories())
+                {
+                    completions.Add(Tuple.Create(item.Name + "/", prefix + item.Name + "/"));
+                }
+            }
+
+            return completions;
         }
 
         async Task<bool> IsLibraryInstallationStateValidAsync()

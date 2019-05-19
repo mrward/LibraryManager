@@ -42,7 +42,7 @@ namespace MonoDevelop.LibraryManager.UI
         RadioButton chooseSpecificFilesRadioButton;
         TreeView libraryFilesTreeView;
         FrameBox chooseLibraryFilesToInstallFrame;
-        TextEntry targetLocationTextEntry;
+        SearchTextEntryWithCodeCompletion targetLocationTextEntry;
         DialogButton installButton;
         DialogButton cancelButton;
         InformationPopoverWidget infoPopover;
@@ -122,7 +122,7 @@ namespace MonoDevelop.LibraryManager.UI
             targetLocationLabel.Text = GettextCatalog.GetString("Target Location:");
             targetLocationHBox.PackStart(targetLocationLabel);
 
-            targetLocationTextEntry = new TextEntry();
+            targetLocationTextEntry = new SearchTextEntryWithCodeCompletion();
             targetLocationHBox.PackStart(targetLocationTextEntry, true, true);
 
             cancelButton = new DialogButton(Command.Cancel);
