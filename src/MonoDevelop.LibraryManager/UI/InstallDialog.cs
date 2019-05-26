@@ -44,6 +44,8 @@ namespace MonoDevelop.LibraryManager.UI
         InstallDialogViewModel viewModel;
         readonly string configFileName;
         int previousLibraryTextEntryLength;
+        string baseFolder;
+        string lastSuggestedTargetLocation;
 
         public InstallDialog(
             IDependencies dependencies,
@@ -57,7 +59,11 @@ namespace MonoDevelop.LibraryManager.UI
             Build();
 
             viewModel = new InstallDialogViewModel(dependencies, libraryCommandService, configFilePath, fullPath, rootFolder, project);
-            LoadDialog();
+
+            lastSuggestedTargetLocation = InstallationFolder.DestinationFolder;
+            baseFolder = InstallationFolder.DestinationFolder;
+
+            LoadDialog ();
         }
 
         void LoadDialog()
@@ -70,7 +76,7 @@ namespace MonoDevelop.LibraryManager.UI
             LoadProviders();
             providerComboBox.SelectionChanged += ProviderComboBoxSelectionChanged;
 
-            targetLocationTextEntry.Text = viewModel.DestinationFolder;
+            targetLocationTextEntry.Text = InstallationFolder.DestinationFolder;
             targetLocationTextEntry.Changed += TargetLocationTextEntryChanged;
             installButton.Sensitive = !string.IsNullOrEmpty(targetLocationTextEntry.Text);
 
@@ -79,6 +85,7 @@ namespace MonoDevelop.LibraryManager.UI
             includeAllLibraryFilesRadioButton.ActiveChanged += IncludeAllLibraryFilesRadioButtonActiveChanged;
             chooseSpecificFilesRadioButton.ActiveChanged += ChooseSpecificFilesRadioButtonActiveChanged;
 
+            viewModel.LibraryNameChange.PropertyChanged += LibraryNameChanged;
             viewModel.PropertyChanged += ViewModelPropertyChanged;
         }
 
@@ -116,6 +123,8 @@ namespace MonoDevelop.LibraryManager.UI
             // If the user clears the field at any point, we should make sure the Install button is disabled till valid folder name is provided.
             installButton.Sensitive = !string.IsNullOrEmpty(targetLocationTextEntry.Text);
 
+            InstallationFolder.DestinationFolder = targetLocationTextEntry.Text;
+
             CompletionSet completionSet = TargetLocationSearch(targetLocationTextEntry.Text, targetLocationTextEntry.CaretOffset);
             targetLocationTextEntry.UpdateCompletionItems(completionSet);
         }
@@ -130,6 +139,7 @@ namespace MonoDevelop.LibraryManager.UI
                 providerComboBox.SelectionChanged -= ProviderComboBoxSelectionChanged;
                 includeAllLibraryFilesRadioButton.ActiveChanged -= IncludeAllLibraryFilesRadioButtonActiveChanged;
                 chooseSpecificFilesRadioButton.ActiveChanged -= ChooseSpecificFilesRadioButtonActiveChanged;
+                viewModel.LibraryNameChange.PropertyChanged -= LibraryNameChanged;
                 viewModel.PropertyChanged -= ViewModelPropertyChanged;
             }
             base.Dispose(disposing);
@@ -326,6 +336,26 @@ namespace MonoDevelop.LibraryManager.UI
         void IncludeAllLibraryFilesRadioButtonActiveChanged(object sender, EventArgs e)
         {
             libraryFilesTreeView.Sensitive = false;
+        }
+
+        void LibraryNameChanged(object sender, PropertyChangedEventArgs e)
+        {
+            string targetLibrary = viewModel.LibraryNameChange.LibraryName;
+
+            if (!string.IsNullOrEmpty(targetLibrary))
+            {
+                if (targetLocationTextEntry.Text.Equals(lastSuggestedTargetLocation, StringComparison.Ordinal))
+                {
+                    if (targetLibrary.Length > 0 && targetLibrary[targetLibrary.Length - 1] == '/')
+                    {
+                        targetLibrary = targetLibrary.Substring(0, targetLibrary.Length - 1);
+                    }
+
+                    targetLocationTextEntry.Text = baseFolder + targetLibrary + '/';
+                    InstallationFolder.DestinationFolder = targetLocationTextEntry.Text;
+                    lastSuggestedTargetLocation = targetLocationTextEntry.Text;
+                }
+            }
         }
     }
 }

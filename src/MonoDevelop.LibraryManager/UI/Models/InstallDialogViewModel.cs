@@ -25,7 +25,6 @@ namespace MonoDevelop.LibraryManager.UI.Models
         string fullPath;
         string rootFolder;
         Project project;
-        string destinationFolder = string.Empty;
         ILibraryCatalog catalog;
         IProvider activeProvider;
         List<IProvider> providers;
@@ -37,9 +36,9 @@ namespace MonoDevelop.LibraryManager.UI.Models
         bool anyFileSelected;
         bool isTreeViewEmpty;
         string errorMessage;
-        //BindLibraryNameToTargetLocation _libraryNameChange;
+        BindLibraryNameToTargetLocation libraryNameChange;
 
-        public InstallDialogViewModel (
+        public InstallDialogViewModel(
             IDependencies dependencies,
             ILibraryCommandService libraryCommandService,
             string configFileName,
@@ -53,6 +52,7 @@ namespace MonoDevelop.LibraryManager.UI.Models
             this.fullPath = fullPath;
             this.rootFolder = rootFolder;
             this.project = project;
+            libraryNameChange = new BindLibraryNameToTargetLocation();
 
             UpdateDestinationFolder(fullPath);
             LoadProviders();
@@ -80,8 +80,10 @@ namespace MonoDevelop.LibraryManager.UI.Models
             }
         }
 
-        void UpdateDestinationFolder (string fullPath)
+        void UpdateDestinationFolder(string fullPath)
         {
+            string destinationFolder = string.Empty;
+
             if (fullPath.StartsWith(rootFolder, StringComparison.OrdinalIgnoreCase))
             {
                 destinationFolder = fullPath.Substring(rootFolder.Length);
@@ -89,6 +91,8 @@ namespace MonoDevelop.LibraryManager.UI.Models
 
             destinationFolder = destinationFolder.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             destinationFolder = destinationFolder.Replace('\\', '/');
+
+            InstallationFolder.DestinationFolder = destinationFolder.Replace('\\', '/');
         }
 
         public IReadOnlyList<PackageItem> DisplayRoots
@@ -162,6 +166,12 @@ namespace MonoDevelop.LibraryManager.UI.Models
 
         public HashSet<string> SelectedFiles { get; private set; }
 
+        internal BindLibraryNameToTargetLocation LibraryNameChange
+        {
+            get { return libraryNameChange; }
+            set { Set(ref libraryNameChange, value); }
+        }
+
         public ILibrary SelectedPackage
         {
             get { return selectedPackage; }
@@ -174,7 +184,7 @@ namespace MonoDevelop.LibraryManager.UI.Models
 
                 if (Set(ref selectedPackage, value) && value != null)
                 {
-                    //libraryNameChange.LibraryName = SelectedProvider.GetSuggestedDestination(SelectedPackage);
+                    libraryNameChange.LibraryName = SelectedProvider.GetSuggestedDestination(SelectedPackage);
                     IsTreeViewEmpty = false;
                     bool canUpdateInstallStatusValue = false;
                     HashSet<string> selectedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -362,14 +372,6 @@ namespace MonoDevelop.LibraryManager.UI.Models
             }
         }
 
-        public string DestinationFolder
-        {
-            get
-            {
-                return destinationFolder;
-            }
-        }
-
         public async Task<bool> IsLibraryInstallationStateValidAsync()
         {
             (string name, string version) = LibraryIdToNameAndVersionConverter.Instance.GetLibraryNameAndVersion(PackageId, SelectedProvider.Id);
@@ -378,7 +380,7 @@ namespace MonoDevelop.LibraryManager.UI.Models
                 Name = name,
                 Version = version,
                 ProviderId = SelectedProvider.Id,
-                DestinationPath = DestinationFolder,
+                DestinationPath = InstallationFolder.DestinationFolder,
                 Files = SelectedFiles?.ToList()
             };
 
@@ -456,7 +458,7 @@ namespace MonoDevelop.LibraryManager.UI.Models
                         Name = name,
                         Version = version,
                         ProviderId = package.ProviderId,
-                        DestinationPath = DestinationFolder,
+                        DestinationPath = InstallationFolder.DestinationFolder,
                     };
 
                     isInstalling = true;
