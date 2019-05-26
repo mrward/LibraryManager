@@ -76,6 +76,9 @@ namespace MonoDevelop.LibraryManager.UI
 
             libraryTextEntry.SetFocus();
 
+            includeAllLibraryFilesRadioButton.ActiveChanged += IncludeAllLibraryFilesRadioButtonActiveChanged;
+            chooseSpecificFilesRadioButton.ActiveChanged += ChooseSpecificFilesRadioButtonActiveChanged;
+
             viewModel.PropertyChanged += ViewModelPropertyChanged;
         }
 
@@ -125,6 +128,8 @@ namespace MonoDevelop.LibraryManager.UI
                 installButton.Clicked -= InstallButtonClicked;
                 libraryTextEntry.Changed -= LibraryTextEntryChanged;
                 providerComboBox.SelectionChanged -= ProviderComboBoxSelectionChanged;
+                includeAllLibraryFilesRadioButton.ActiveChanged -= IncludeAllLibraryFilesRadioButtonActiveChanged;
+                chooseSpecificFilesRadioButton.ActiveChanged -= ChooseSpecificFilesRadioButtonActiveChanged;
                 viewModel.PropertyChanged -= ViewModelPropertyChanged;
             }
             base.Dispose(disposing);
@@ -302,6 +307,16 @@ namespace MonoDevelop.LibraryManager.UI
                 AddLibraryFileNodes(navigator, childItem);
                 navigator.MoveToParent();
             }
+        }
+
+        void ChooseSpecificFilesRadioButtonActiveChanged (object sender, EventArgs e)
+        {
+            libraryFilesTreeView.Sensitive = true;
+        }
+
+        void IncludeAllLibraryFilesRadioButtonActiveChanged(object sender, EventArgs e)
+        {
+            libraryFilesTreeView.Sensitive = false;
         }
     }
 }

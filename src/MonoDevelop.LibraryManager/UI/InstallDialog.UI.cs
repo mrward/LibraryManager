@@ -106,6 +106,7 @@ namespace MonoDevelop.LibraryManager.UI
 
             libraryFilesTreeView = new TreeView();
             libraryFilesTreeView.HeadersVisible = false;
+            libraryFilesTreeView.Sensitive = false;
             libraryFilesVBox.PackStart(libraryFilesTreeView, true, true);
 
             libraryFilesTreeStore = new TreeStore (libraryFileCheckedDataField, libraryFileCheckedEditableDataField, libraryFileDescriptionDataField);
