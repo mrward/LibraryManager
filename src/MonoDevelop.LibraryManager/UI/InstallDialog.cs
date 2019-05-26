@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,6 +35,7 @@ using Microsoft.Web.LibraryManager.Vsix;
 using MonoDevelop.Ide;
 using MonoDevelop.LibraryManager.UI.Models;
 using MonoDevelop.Projects;
+using Xwt;
 
 namespace MonoDevelop.LibraryManager.UI
 {
@@ -73,6 +75,8 @@ namespace MonoDevelop.LibraryManager.UI
             installButton.Sensitive = !string.IsNullOrEmpty(targetLocationTextEntry.Text);
 
             libraryTextEntry.SetFocus();
+
+            viewModel.PropertyChanged += ViewModelPropertyChanged;
         }
 
         void CancelButtonClicked(object sender, EventArgs e)
@@ -121,6 +125,7 @@ namespace MonoDevelop.LibraryManager.UI
                 installButton.Clicked -= InstallButtonClicked;
                 libraryTextEntry.Changed -= LibraryTextEntryChanged;
                 providerComboBox.SelectionChanged -= ProviderComboBoxSelectionChanged;
+                viewModel.PropertyChanged -= ViewModelPropertyChanged;
             }
             base.Dispose(disposing);
         }
@@ -244,6 +249,58 @@ namespace MonoDevelop.LibraryManager.UI
             {
                 MessageService.ShowError(this, viewModel.ErrorMessage);
                 installButton.Sensitive = true;
+            }
+        }
+
+        void ViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName) {
+                case nameof (viewModel.IsTreeViewEmpty):
+                    OnIsTreeViewEmptyChanged();
+                    break;
+                case nameof (viewModel.DisplayRoots):
+                    OnDisplayRootsChanged();
+                    break;
+            }
+        }
+
+        void OnIsTreeViewEmptyChanged()
+        {
+            chooseLibraryFilesToInstallFrame.Visible = viewModel.IsTreeViewEmpty;
+            libraryFilesTreeView.Visible = !viewModel.IsTreeViewEmpty;
+        }
+
+        void OnDisplayRootsChanged()
+        {
+            libraryFilesTreeStore.Clear();
+
+            foreach (PackageItem item in viewModel.DisplayRoots)
+            {
+                AddLibraryFileNodes(null, item);
+            }
+
+            libraryFilesTreeView.ExpandAll();
+        }
+
+        void AddLibraryFileNodes(TreeNavigator navigator, PackageItem item)
+        {
+            if (navigator == null)
+            {
+                navigator = libraryFilesTreeStore.AddNode();
+            }
+            else
+            {
+                navigator.AddChild();
+            }
+
+            navigator.SetValue(libraryFileCheckedDataField, item.IsChecked ?? true);
+            navigator.SetValue(libraryFileCheckedEditableDataField, item.IsChecked.HasValue);
+            navigator.SetValue(libraryFileDescriptionDataField, item.Name);
+
+            foreach (PackageItem childItem in item.Children)
+            {
+                AddLibraryFileNodes(navigator, childItem);
+                navigator.MoveToParent();
             }
         }
     }

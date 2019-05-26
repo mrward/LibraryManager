@@ -41,7 +41,13 @@ namespace MonoDevelop.LibraryManager.UI
         RadioButton includeAllLibraryFilesRadioButton;
         RadioButton chooseSpecificFilesRadioButton;
         TreeView libraryFilesTreeView;
+        TreeStore libraryFilesTreeStore;
+        DataField<bool> libraryFileCheckedDataField = new DataField<bool>();
+        DataField<bool> libraryFileCheckedEditableDataField = new DataField<bool> ();
+        DataField<string> libraryFileDescriptionDataField = new DataField<string>();
+        CheckBoxCellView libraryFilesCheckBoxCellView;
         FrameBox chooseLibraryFilesToInstallFrame;
+        Label chooseLibraryFilesToInstallLabel;
         SearchTextEntryWithCodeCompletion targetLocationTextEntry;
         DialogButton installButton;
         DialogButton cancelButton;
@@ -99,13 +105,22 @@ namespace MonoDevelop.LibraryManager.UI
             mainVBox.PackStart(libraryFilesVBox, true, true);
 
             libraryFilesTreeView = new TreeView();
-            libraryFilesTreeView.BackgroundColor = Colors.Red;
+            libraryFilesTreeView.HeadersVisible = false;
             libraryFilesVBox.PackStart(libraryFilesTreeView, true, true);
+
+            libraryFilesTreeStore = new TreeStore (libraryFileCheckedDataField, libraryFileCheckedEditableDataField, libraryFileDescriptionDataField);
+            libraryFilesTreeView.DataSource = libraryFilesTreeStore;
+
+            libraryFilesCheckBoxCellView = new CheckBoxCellView(libraryFileCheckedDataField);
+            libraryFilesCheckBoxCellView.EditableField = libraryFileCheckedEditableDataField;
+            libraryFilesTreeView.Columns.Add("Checked", libraryFilesCheckBoxCellView);
+            libraryFilesTreeView.Columns.Add("Text", libraryFileDescriptionDataField);
+            libraryFilesTreeView.Columns[1].Expands = true;
 
             var chooseLibraryFilesToInstallHBox = new HBox();
             chooseLibraryFilesToInstallHBox.HorizontalPlacement = WidgetPlacement.Center;
 
-            var chooseLibraryFilesToInstallLabel = new Label();
+            chooseLibraryFilesToInstallLabel = new Label();
             chooseLibraryFilesToInstallLabel.Text = GettextCatalog.GetString("Choose a library to select files to install");
             chooseLibraryFilesToInstallHBox.PackEnd(chooseLibraryFilesToInstallLabel);
 

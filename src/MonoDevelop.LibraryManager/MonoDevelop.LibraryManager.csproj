@@ -75,6 +75,12 @@
     <Compile Include="UI\Models\SearchCompletionDataList.cs" />
     <Compile Include="UI\Models\SearchCompletionData.cs" />
     <Compile Include="UI\Span.cs" />
+    <Compile Include="UI\Models\BindableBase.cs" />
+    <Compile Include="UI\Models\FileSelection.cs" />
+    <Compile Include="UI\Models\FileSelectionType.cs" />
+    <Compile Include="UI\Models\InstallationFolder.cs" />
+    <Compile Include="UI\Models\PackageItemType.cs" />
+    <Compile Include="UI\Models\PackageItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\LibraryManager.addin.xml">

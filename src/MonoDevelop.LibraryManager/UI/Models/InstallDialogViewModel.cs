@@ -1,31 +1,9 @@
-﻿//
-// InstallDialogViewModel.cs
-//
-// Author:
-//       Matt Ward <matt.ward@microsoft.com>
-//
-// Copyright (c) 2019 Microsoft
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -39,7 +17,7 @@ using MonoDevelop.Core;
 
 namespace MonoDevelop.LibraryManager.UI.Models
 {
-    class InstallDialogViewModel
+    class InstallDialogViewModel : BindableBase
     {
         IDependencies dependencies;
         ILibraryCommandService libraryCommandService;
@@ -54,6 +32,12 @@ namespace MonoDevelop.LibraryManager.UI.Models
         string packageId = string.Empty;
         bool isInstalling;
         ILibrary selectedPackage;
+        IReadOnlyList<PackageItem> displayRoots;
+        FileSelectionType fileSelectionType;
+        bool anyFileSelected;
+        bool isTreeViewEmpty;
+        string errorMessage;
+        //BindLibraryNameToTargetLocation _libraryNameChange;
 
         public InstallDialogViewModel (
             IDependencies dependencies,
@@ -107,6 +91,45 @@ namespace MonoDevelop.LibraryManager.UI.Models
             destinationFolder = destinationFolder.Replace('\\', '/');
         }
 
+        public IReadOnlyList<PackageItem> DisplayRoots
+        {
+            get
+            {
+                IReadOnlyList<PackageItem> currentDisplayRoots = displayRoots;
+
+                if (currentDisplayRoots != null && currentDisplayRoots.Any())
+                {
+                    currentDisplayRoots.ElementAt(0).Name = GettextCatalog.GetString("Files:");
+                }
+
+                return displayRoots;
+            }
+
+            set
+            {
+                if (string.IsNullOrEmpty (PackageId))
+                {
+                    Set(ref displayRoots, null);
+                }
+                else
+                {
+                    Set(ref displayRoots, value);
+                }
+            }
+        }
+
+        public bool IsTreeViewEmpty
+        {
+            get { return isTreeViewEmpty; }
+            set
+            {
+                if (Set(ref isTreeViewEmpty, value))
+                {
+                    RefreshFileSelections();
+                }
+            }
+        }
+
         public string PackageId
         {
             get { return packageId; }
@@ -118,11 +141,11 @@ namespace MonoDevelop.LibraryManager.UI.Models
                     if (packageId != value)
                     {
                         packageId = value;
-                        //SelectedPackage = null;
+                        SelectedPackage = null;
                     }
 
-                    //AnyFileSelected = false;
-                    //DisplayRoots = null;
+                    AnyFileSelected = false;
+                    DisplayRoots = null;
                 }
                 else
                 {
@@ -137,6 +160,8 @@ namespace MonoDevelop.LibraryManager.UI.Models
 
         public IReadOnlyList<IProvider> Providers => providers;
 
+        public HashSet<string> SelectedFiles { get; private set; }
+
         public ILibrary SelectedPackage
         {
             get { return selectedPackage; }
@@ -144,121 +169,118 @@ namespace MonoDevelop.LibraryManager.UI.Models
             {
                 if (value == null)
                 {
-                    //IsTreeViewEmpty = true;
+                    IsTreeViewEmpty = true;
                 }
 
-                if (selectedPackage == value)
+                if (Set(ref selectedPackage, value) && value != null)
                 {
-                    return;
+                    //libraryNameChange.LibraryName = SelectedProvider.GetSuggestedDestination(SelectedPackage);
+                    IsTreeViewEmpty = false;
+                    bool canUpdateInstallStatusValue = false;
+                    HashSet<string> selectedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    Func<bool> canUpdateInstallStatus = () => canUpdateInstallStatusValue;
+                    var root = new PackageItem(this, null, selectedFiles)
+                    {
+                        CanUpdateInstallStatus = canUpdateInstallStatus,
+                        ItemType = PackageItemType.Folder,
+                        Name = Path.GetFileName(fullPath.TrimEnd ('/', '\\')),
+                        IsChecked = false
+                    };
+
+                    var packageItem = new PackageItem(this, root, selectedFiles)
+                    {
+                        CanUpdateInstallStatus = canUpdateInstallStatus,
+                        Name = value.Name,
+                        ItemType = PackageItemType.Folder,
+                        IsChecked = false
+                    };
+
+                    //The node that children will be added to
+                    PackageItem realParent = root;
+                    //The node that will be set as the parent of the child nodes
+                    PackageItem virtualParent = packageItem;
+
+                    foreach (KeyValuePair<string, bool> file in value.Files)
+                    {
+                        string[] parts = file.Key.Split('/');
+                        PackageItem currentRealParent = realParent;
+                        PackageItem currentVirtualParent = virtualParent;
+
+                        for (int i = 0; i < parts.Length; ++i)
+                        {
+                            bool isFolder = i != parts.Length - 1;
+
+                            if (isFolder)
+                            {
+                                PackageItem next = currentRealParent.Children.FirstOrDefault(
+                                    x => x.ItemType == PackageItemType.Folder &&
+                                        string.Equals(x.Name, parts[i], StringComparison.OrdinalIgnoreCase));
+
+                                if (next == null)
+                                {
+                                    next = new PackageItem(this, currentVirtualParent, selectedFiles)
+                                    {
+                                        CanUpdateInstallStatus = canUpdateInstallStatus,
+                                        Name = parts[i],
+                                        ItemType = PackageItemType.Folder,
+                                        IsChecked = false
+                                    };
+
+                                    var children = new List<PackageItem>(currentRealParent.Children) { next };
+
+                                    children.Sort((x, y) => x.ItemType == y.ItemType ?
+                                        StringComparer.OrdinalIgnoreCase.Compare(x.Name, y.Name) : y.ItemType == PackageItemType.Folder ? 1 : -1);
+
+                                    currentRealParent.Children = children;
+
+                                    if (currentVirtualParent != currentRealParent)
+                                    {
+                                        currentVirtualParent.Children = children;
+                                    }
+                                }
+
+                                currentRealParent = next;
+                                currentVirtualParent = next;
+                            }
+                            else
+                            {
+                                var next = new PackageItem(this, currentVirtualParent, selectedFiles)
+                                {
+                                    CanUpdateInstallStatus = canUpdateInstallStatus,
+                                    FullPath = file.Key,
+                                    Name = parts[i],
+                                    ItemType = PackageItemType.File,
+                                    IsChecked = file.Value,
+                                };
+
+                                if (next.IsChecked ?? false)
+                                {
+                                    selectedFiles.Add(next.FullPath);
+                                }
+
+                                var children = new List<PackageItem>(currentRealParent.Children) { next };
+                                children.Sort ((x, y) => x.ItemType == y.ItemType ?
+                                StringComparer.OrdinalIgnoreCase.Compare(x.Name, y.Name) : y.ItemType == PackageItemType.Folder ? -1 : 1);
+
+                                currentRealParent.Children = children;
+
+                                if (currentVirtualParent != currentRealParent)
+                                {
+                                    currentVirtualParent.Children = children;
+                                }
+                            }
+                        }
+                    }
+
+                    Runtime.RunInMainThread(() =>
+                    {
+                        canUpdateInstallStatusValue = true;
+                        SetNodeOpenStates(root);
+                        DisplayRoots = new[] { root };
+                        SelectedFiles = selectedFiles;
+                        //InstallPackageCommand.CanExecute(null);
+                    }).Ignore();
                 }
-
-                selectedPackage = value;
-
-                //if (selectedPackage != null)
-                //{
-                    ////libraryNameChange.LibraryName = SelectedProvider.GetSuggestedDestination(SelectedPackage);
-                    ////IsTreeViewEmpty = false;
-                    //bool canUpdateInstallStatusValue = false;
-                    //HashSet<string> selectedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    //Func<bool> canUpdateInstallStatus = () => canUpdateInstallStatusValue;
-                    //var root = new PackageItem(this, null, selectedFiles)
-                    //{
-                    //    CanUpdateInstallStatus = canUpdateInstallStatus,
-                    //    ItemType = PackageItemType.Folder,
-                    //    Name = Path.GetFileName(fullPath.TrimEnd('/', '\\')),
-                    //    IsChecked = false
-                    //};
-
-                    //var packageItem = new PackageItem(this, root, selectedFiles)
-                    //{
-                    //    CanUpdateInstallStatus = canUpdateInstallStatus,
-                    //    Name = value.Name,
-                    //    ItemType = PackageItemType.Folder,
-                    //    IsChecked = false
-                    //};
-
-                    ////The node that children will be added to
-                    //PackageItem realParent = root;
-                    ////The node that will be set as the parent of the child nodes
-                    //PackageItem virtualParent = packageItem;
-
-                    //foreach (KeyValuePair<string, bool> file in value.Files)
-                    //{
-                    //    string[] parts = file.Key.Split('/');
-                    //    PackageItem currentRealParent = realParent;
-                    //    PackageItem currentVirtualParent = virtualParent;
-
-                    //    for (int i = 0; i < parts.Length; ++i)
-                    //    {
-                    //        bool isFolder = i != parts.Length - 1;
-
-                    //        if (isFolder)
-                    //        {
-                    //            PackageItem next = currentRealParent.Children.FirstOrDefault(x => x.ItemType == PackageItemType.Folder && string.Equals(x.Name, parts[i], StringComparison.OrdinalIgnoreCase));
-
-                    //            if (next == null)
-                    //            {
-                    //                next = new PackageItem(this, currentVirtualParent, selectedFiles)
-                    //                {
-                    //                    CanUpdateInstallStatus = canUpdateInstallStatus,
-                    //                    Name = parts[i],
-                    //                    ItemType = PackageItemType.Folder,
-                    //                    IsChecked = false
-                    //                };
-
-                    //                var children = new List<PackageItem>(currentRealParent.Children) { next };
-
-                    //                children.Sort((x, y) => x.ItemType == y.ItemType ? StringComparer.OrdinalIgnoreCase.Compare(x.Name, y.Name) : y.ItemType == PackageItemType.Folder ? 1 : -1);
-
-                    //                currentRealParent.Children = children;
-
-                    //                if (currentVirtualParent != currentRealParent)
-                    //                {
-                    //                    currentVirtualParent.Children = children;
-                    //                }
-                    //            }
-
-                    //            currentRealParent = next;
-                    //            currentVirtualParent = next;
-                    //        }
-                    //        else
-                    //        {
-                    //            var next = new PackageItem(this, currentVirtualParent, selectedFiles)
-                    //            {
-                    //                CanUpdateInstallStatus = canUpdateInstallStatus,
-                    //                FullPath = file.Key,
-                    //                Name = parts[i],
-                    //                ItemType = PackageItemType.File,
-                    //                IsChecked = file.Value,
-                    //            };
-
-                    //            if (next.IsChecked ?? false)
-                    //            {
-                    //                selectedFiles.Add(next.FullPath);
-                    //            }
-
-                    //            var children = new List<PackageItem>(currentRealParent.Children) { next };
-                    //            children.Sort((x, y) => x.ItemType == y.ItemType ? StringComparer.OrdinalIgnoreCase.Compare(x.Name, y.Name) : y.ItemType == PackageItemType.Folder ? -1 : 1);
-
-                    //            currentRealParent.Children = children;
-
-                    //            if (currentVirtualParent != currentRealParent)
-                    //            {
-                    //                currentVirtualParent.Children = children;
-                    //            }
-                    //        }
-                    //    }
-                    //}
-
-                    //_dispatcher.Invoke(() =>
-                    //{
-                    //    canUpdateInstallStatusValue = true;
-                    //    SetNodeOpenStates(root);
-                    //    DisplayRoots = new[] { root };
-                    //    SelectedFiles = selectedFiles;
-                    //    InstallPackageCommand.CanExecute(null);
-                    //});
-                //}
             }
         }
 
@@ -279,6 +301,20 @@ namespace MonoDevelop.LibraryManager.UI.Models
             }, TaskScheduler.Default);
         }
 
+        public FileSelectionType LibraryFilesToInstall
+        {
+            get
+            {
+                return fileSelectionType;
+            }
+            set
+            {
+                fileSelectionType = value;
+                FileSelection.InstallationType = value;
+                RefreshFileSelections ();
+            }
+        }
+
         public IProvider SelectedProvider
         {
             get { return activeProvider; }
@@ -293,7 +329,30 @@ namespace MonoDevelop.LibraryManager.UI.Models
             }
         }
 
-        public string ErrorMessage { get; set; }
+        static void SetNodeOpenStates(PackageItem item)
+        {
+            bool shouldBeOpen = false;
+
+            foreach (PackageItem child in item.Children)
+            {
+                SetNodeOpenStates(child);
+                shouldBeOpen |= child.IsChecked.GetValueOrDefault(true) || child.IsExpanded;
+            }
+
+            item.IsExpanded = shouldBeOpen;
+        }
+
+        public bool AnyFileSelected
+        {
+            get { return anyFileSelected; }
+            set { Set (ref anyFileSelected, value); }
+        }
+
+        public string ErrorMessage
+        {
+            get { return errorMessage; }
+            set { Set(ref errorMessage, value); }
+        }
 
         public string SelectedProviderHintMessage
         {
@@ -320,7 +379,7 @@ namespace MonoDevelop.LibraryManager.UI.Models
                 Version = version,
                 ProviderId = SelectedProvider.Id,
                 DestinationPath = DestinationFolder,
-                //Files = SelectedFiles?.ToList()
+                Files = SelectedFiles?.ToList()
             };
 
             ILibraryOperationResult libraryOperationResult = await libraryInstallationState.IsValidAsync(SelectedProvider).ConfigureAwait(false);
@@ -334,38 +393,38 @@ namespace MonoDevelop.LibraryManager.UI.Models
                 return false;
             }
 
-            //AnyFileSelected = IsAnyFileSelected(DisplayRoots);
+            AnyFileSelected = IsAnyFileSelected(DisplayRoots);
 
-            //if (!AnyFileSelected)
-            //{
-            //   ErrorMessage = Text.NoFilesSelected;
-            //   return false;
-            //}
+            if (!AnyFileSelected)
+            {
+               ErrorMessage = GettextCatalog.GetString("No files have been selected");
+               return false;
+            }
 
             return true;
         }
 
-        //static bool IsAnyFileSelected(IReadOnlyList<PackageItem> children)
-        //{
-        //    if (children != null)
-        //    {
-        //        List<PackageItem> toProcess = children.ToList();
+        static bool IsAnyFileSelected(IReadOnlyList<PackageItem> children)
+        {
+            if (children != null)
+            {
+                List<PackageItem> toProcess = children.ToList();
 
-        //        for (int i = 0; i < toProcess.Count; i++)
-        //        {
-        //            PackageItem child = toProcess[i];
+                for (int i = 0; i < toProcess.Count; i++)
+                {
+                    PackageItem child = toProcess[i];
 
-        //            if (child.IsChecked.HasValue && child.IsChecked.Value)
-        //            {
-        //                return true;
-        //            }
+                    if (child.IsChecked.HasValue && child.IsChecked.Value)
+                    {
+                        return true;
+                    }
 
-        //            toProcess.AddRange(child.Children);
-        //        }
-        //    }
+                    toProcess.AddRange(child.Children);
+                }
+            }
 
-        //    return false;
-        //}
+            return false;
+        }
 
         public async Task InstallPackageAsync()
         {
@@ -404,10 +463,10 @@ namespace MonoDevelop.LibraryManager.UI.Models
 
                     // When "Include all files" option is checked, we don't want to write out the files to libman.json.
                     // We will only list the files when user chose to install specific files.
-                    //if (LibraryFilesToInstall == FileSelectionType.ChooseSpecificFilesToInstall)
-                    //{
-                    //    libraryInstallationState.Files = SelectedFiles.ToList();
-                    //}
+                    if (LibraryFilesToInstall == FileSelectionType.ChooseSpecificFilesToInstall)
+                    {
+                        libraryInstallationState.Files = SelectedFiles.ToList();
+                    }
 
                     manifest.AddLibrary(libraryInstallationState);
 
