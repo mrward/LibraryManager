@@ -150,6 +150,15 @@ namespace MonoDevelop.LibraryManager.UI
         {
             viewModel.SelectedProvider = (IProvider)providerComboBox.SelectedItem;
             infoPopover.Message = viewModel.SelectedProviderHintMessage;
+
+            if (!viewModel.IsTreeViewEmpty)
+            {
+                includeAllLibraryFilesRadioButton.Active = true;
+                libraryTextEntry.Text = string.Empty;
+                viewModel.IsTreeViewEmpty = true;
+                viewModel.PackageId = null;
+                viewModel.AnyFileSelected = false;
+            }
         }
 
         Task<CompletionSet> PerformSearch(string searchText, int caretPosition)
