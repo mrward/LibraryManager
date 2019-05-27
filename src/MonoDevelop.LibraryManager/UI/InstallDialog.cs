@@ -84,6 +84,8 @@ namespace MonoDevelop.LibraryManager.UI
 
             includeAllLibraryFilesRadioButton.ActiveChanged += IncludeAllLibraryFilesRadioButtonActiveChanged;
 
+            libraryFilesCheckBoxCellView.Toggled += LibraryFilesCheckBoxCellViewToggled;
+
             viewModel.LibraryNameChange.PropertyChanged += LibraryNameChanged;
             viewModel.PropertyChanged += ViewModelPropertyChanged;
         }
@@ -137,6 +139,7 @@ namespace MonoDevelop.LibraryManager.UI
                 libraryTextEntry.Changed -= LibraryTextEntryChanged;
                 providerComboBox.SelectionChanged -= ProviderComboBoxSelectionChanged;
                 includeAllLibraryFilesRadioButton.ActiveChanged -= IncludeAllLibraryFilesRadioButtonActiveChanged;
+                libraryFilesCheckBoxCellView.Toggled -= LibraryFilesCheckBoxCellViewToggled;
                 viewModel.LibraryNameChange.PropertyChanged -= LibraryNameChanged;
                 viewModel.PropertyChanged -= ViewModelPropertyChanged;
             }
@@ -315,9 +318,10 @@ namespace MonoDevelop.LibraryManager.UI
                 navigator.AddChild();
             }
 
-            navigator.SetValue(libraryFileCheckedDataField, item.IsChecked ?? true);
+            navigator.SetValue(libraryFileCheckedDataField, item.IsChecked.GetValueOrDefault());
             navigator.SetValue(libraryFileCheckedEditableDataField, item.IsChecked.HasValue);
             navigator.SetValue(libraryFileDescriptionDataField, item.Name);
+            navigator.SetValue(libraryFilePackageItemDataField, item);
 
             foreach (PackageItem childItem in item.Children)
             {
@@ -358,6 +362,27 @@ namespace MonoDevelop.LibraryManager.UI
                     InstallationFolder.DestinationFolder = targetLocationTextEntry.Text;
                     lastSuggestedTargetLocation = targetLocationTextEntry.Text;
                 }
+            }
+        }
+
+        void LibraryFilesCheckBoxCellViewToggled(object sender, WidgetEventArgs e)
+        {
+            TreePosition currentPosition = libraryFilesTreeView.CurrentEventRow;
+            if (currentPosition == null)
+                return;
+
+            TreeNavigator navigator = libraryFilesTreeStore.GetNavigatorAt(currentPosition);
+            if (navigator == null)
+                return;
+
+            PackageItem item = navigator.GetValue(libraryFilePackageItemDataField);
+            bool libraryFileChecked = navigator.GetValue(libraryFileCheckedDataField);
+
+            if (item != null)
+            {
+                // Note that the toggle event seems to happen before the check box changes
+                // which is why we are using !libraryFileChecked.
+                item.IsChecked = !libraryFileChecked;
             }
         }
     }

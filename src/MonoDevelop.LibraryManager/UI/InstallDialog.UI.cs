@@ -45,6 +45,7 @@ namespace MonoDevelop.LibraryManager.UI
         DataField<bool> libraryFileCheckedDataField = new DataField<bool>();
         DataField<bool> libraryFileCheckedEditableDataField = new DataField<bool> ();
         DataField<string> libraryFileDescriptionDataField = new DataField<string>();
+        DataField<PackageItem> libraryFilePackageItemDataField = new DataField<PackageItem>();
         CheckBoxCellView libraryFilesCheckBoxCellView;
         FrameBox chooseLibraryFilesToInstallFrame;
         Label chooseLibraryFilesToInstallLabel;
@@ -109,7 +110,11 @@ namespace MonoDevelop.LibraryManager.UI
             libraryFilesTreeView.Sensitive = false;
             libraryFilesVBox.PackStart(libraryFilesTreeView, true, true);
 
-            libraryFilesTreeStore = new TreeStore (libraryFileCheckedDataField, libraryFileCheckedEditableDataField, libraryFileDescriptionDataField);
+            libraryFilesTreeStore = new TreeStore (
+                    libraryFileCheckedDataField,
+                    libraryFileCheckedEditableDataField,
+                    libraryFileDescriptionDataField,
+                    libraryFilePackageItemDataField);
             libraryFilesTreeView.DataSource = libraryFilesTreeStore;
 
             libraryFilesCheckBoxCellView = new CheckBoxCellView(libraryFileCheckedDataField);
