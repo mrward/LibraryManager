@@ -83,7 +83,6 @@ namespace MonoDevelop.LibraryManager.UI
             libraryTextEntry.SetFocus();
 
             includeAllLibraryFilesRadioButton.ActiveChanged += IncludeAllLibraryFilesRadioButtonActiveChanged;
-            chooseSpecificFilesRadioButton.ActiveChanged += ChooseSpecificFilesRadioButtonActiveChanged;
 
             viewModel.LibraryNameChange.PropertyChanged += LibraryNameChanged;
             viewModel.PropertyChanged += ViewModelPropertyChanged;
@@ -138,7 +137,6 @@ namespace MonoDevelop.LibraryManager.UI
                 libraryTextEntry.Changed -= LibraryTextEntryChanged;
                 providerComboBox.SelectionChanged -= ProviderComboBoxSelectionChanged;
                 includeAllLibraryFilesRadioButton.ActiveChanged -= IncludeAllLibraryFilesRadioButtonActiveChanged;
-                chooseSpecificFilesRadioButton.ActiveChanged -= ChooseSpecificFilesRadioButtonActiveChanged;
                 viewModel.LibraryNameChange.PropertyChanged -= LibraryNameChanged;
                 viewModel.PropertyChanged -= ViewModelPropertyChanged;
             }
@@ -328,14 +326,19 @@ namespace MonoDevelop.LibraryManager.UI
             }
         }
 
-        void ChooseSpecificFilesRadioButtonActiveChanged (object sender, EventArgs e)
-        {
-            libraryFilesTreeView.Sensitive = true;
-        }
-
         void IncludeAllLibraryFilesRadioButtonActiveChanged(object sender, EventArgs e)
         {
-            libraryFilesTreeView.Sensitive = false;
+            bool includeAllLibraryFiles = includeAllLibraryFilesRadioButton.Active;
+            libraryFilesTreeView.Sensitive = !includeAllLibraryFiles;
+
+            if (includeAllLibraryFiles)
+            {
+                viewModel.LibraryFilesToInstall = FileSelectionType.InstallAllLibraryFiles;
+            }
+            else
+            {
+                viewModel.LibraryFilesToInstall = FileSelectionType.ChooseSpecificFilesToInstall;
+            }
         }
 
         void LibraryNameChanged(object sender, PropertyChangedEventArgs e)

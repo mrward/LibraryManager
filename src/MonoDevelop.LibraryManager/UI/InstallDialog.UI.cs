@@ -26,7 +26,7 @@
 
 using Xwt;
 using MonoDevelop.Core;
-using Xwt.Drawing;
+using MonoDevelop.LibraryManager.UI.Models;
 using InformationPopoverWidget = MonoDevelop.Components.InformationPopoverWidget;
 
 namespace MonoDevelop.LibraryManager.UI
