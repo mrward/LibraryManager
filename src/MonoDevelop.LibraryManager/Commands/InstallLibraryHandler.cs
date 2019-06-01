@@ -32,6 +32,7 @@ using Microsoft.Web.LibraryManager;
 using Microsoft.Web.LibraryManager.Contracts;
 using Microsoft.Web.LibraryManager.Vsix;
 using MonoDevelop.Components.Commands;
+using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui.Pads.ProjectPad;
 using MonoDevelop.LibraryManager.Vsix;
@@ -96,9 +97,12 @@ namespace MonoDevelop.LibraryManager.Commands
                     }
                 }
 
-                var dialog = new UI.InstallDialog(dependencies, libraryCommandService, configFilePath, target, rootFolder, project);
-                WindowFrame parent = Toolkit.CurrentEngine.WrapWindow(IdeApp.Workbench.RootWindow);
-                dialog.Run(parent);
+                Runtime.RunInMainThread(() =>
+                {
+                    var dialog = new UI.InstallDialog(dependencies, libraryCommandService, configFilePath, target, rootFolder, project);
+                    WindowFrame parent = Toolkit.CurrentEngine.WrapWindow(IdeApp.Workbench.RootWindow);
+                    dialog.Run(parent);
+                }).Ignore();
             }
         }
 
