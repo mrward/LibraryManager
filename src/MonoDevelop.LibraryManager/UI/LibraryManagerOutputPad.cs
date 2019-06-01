@@ -51,7 +51,7 @@ namespace MonoDevelop.LibraryManager.UI
 
         protected override void Initialize(IPadWindow window)
         {
-            logView = new LogView();
+            CreateLogView();
 
             DockItemToolbar toolbar = window.GetToolbar(DockPositionType.Right);
 
@@ -80,12 +80,41 @@ namespace MonoDevelop.LibraryManager.UI
 
         public static void WriteText(string message)
         {
-            logView?.WriteText (null, message + Environment.NewLine);
+            if (logView == null)
+            {
+                InitLogView(() => WriteText(message));
+                return;
+            }
+
+            logView.WriteText (null, message + Environment.NewLine);
         }
 
         public static void WriteError(string message)
         {
-            logView?.WriteError(null, message + Environment.NewLine);
+            if (logView == null)
+            {
+                InitLogView(() => WriteError(message));
+                return;
+            }
+
+            logView.WriteError(null, message + Environment.NewLine);
+        }
+
+        static void InitLogView (System.Action action)
+        {
+            Runtime.RunInMainThread (() =>
+            {
+                CreateLogView();
+                action ();
+            });
+        }
+
+        static void CreateLogView()
+        {
+            if (logView == null)
+            {
+                logView = new LogView();
+            }
         }
     }
 }

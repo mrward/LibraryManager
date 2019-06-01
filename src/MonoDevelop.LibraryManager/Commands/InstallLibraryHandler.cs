@@ -34,6 +34,7 @@ using Microsoft.Web.LibraryManager.Vsix;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui.Pads.ProjectPad;
+using MonoDevelop.LibraryManager.Vsix;
 using MonoDevelop.Projects;
 using Xwt;
 
@@ -45,6 +46,7 @@ namespace MonoDevelop.LibraryManager.Commands
 
         protected override void Run ()
         {
+            LibraryManagerService.Initialize();
             RunAsync().Ignore();
         }
 

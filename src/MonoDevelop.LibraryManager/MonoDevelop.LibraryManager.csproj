@@ -82,6 +82,7 @@
     <Compile Include="UI\Models\PackageItemType.cs" />
     <Compile Include="UI\Models\PackageItem.cs" />
     <Compile Include="UI\Models\BindLibraryNameToTargetLocation.cs" />
+    <Compile Include="Shared\LibraryManagerService.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\LibraryManager.addin.xml">
