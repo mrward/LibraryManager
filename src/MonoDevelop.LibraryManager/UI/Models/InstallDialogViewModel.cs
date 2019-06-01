@@ -303,6 +303,9 @@ namespace MonoDevelop.LibraryManager.UI.Models
             {
                 if (x.IsFaulted || x.IsCanceled)
                 {
+                    // Ensure exception is used so that no unhandled exception occurs.
+                    var ex = x.Exception;
+
                     SelectedPackage = null;
                     return;
                 }
