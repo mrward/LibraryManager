@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 using Microsoft.Web.LibraryManager.Contracts;
 using Microsoft.Web.LibraryManager.Vsix;
 using MonoDevelop.Ide;
+using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.LibraryManager.UI.Models;
 using MonoDevelop.Projects;
 using Xwt;
@@ -142,6 +143,8 @@ namespace MonoDevelop.LibraryManager.UI
                 libraryFilesCheckBoxCellView.Toggled -= LibraryFilesCheckBoxCellViewToggled;
                 viewModel.LibraryNameChange.PropertyChanged -= LibraryNameChanged;
                 viewModel.PropertyChanged -= ViewModelPropertyChanged;
+
+                CompletionWindowManager.HideWindow();
             }
             base.Dispose(disposing);
         }

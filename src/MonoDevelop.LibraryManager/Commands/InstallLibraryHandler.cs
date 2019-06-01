@@ -99,9 +99,11 @@ namespace MonoDevelop.LibraryManager.Commands
 
                 Runtime.RunInMainThread(() =>
                 {
-                    var dialog = new UI.InstallDialog(dependencies, libraryCommandService, configFilePath, target, rootFolder, project);
-                    WindowFrame parent = Toolkit.CurrentEngine.WrapWindow(IdeApp.Workbench.RootWindow);
-                    dialog.Run(parent);
+                    using (var dialog = new UI.InstallDialog(dependencies, libraryCommandService, configFilePath, target, rootFolder, project))
+                    {
+                        WindowFrame parent = Toolkit.CurrentEngine.WrapWindow(IdeApp.Workbench.RootWindow);
+                        dialog.Run(parent);
+                    }
                 }).Ignore();
             }
         }
