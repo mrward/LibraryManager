@@ -35,7 +35,7 @@ using Xwt;
 
 namespace MonoDevelop.LibraryManager.UI
 {
-    class SearchTextEntryWithCodeCompletion : SearchTextEntry, ICompletionWidget
+    class SearchTextEntryWithCodeCompletion : TextEntry, ICompletionWidget
     {
         CodeCompletionContext ctx;
         SearchCompletionDataList list;
@@ -126,10 +126,8 @@ namespace MonoDevelop.LibraryManager.UI
         public void SetCodeCompletionList(IList<string> list)
         {
             this.list = new SearchCompletionDataList();
-            //this.list = new CompletionDataList();
             foreach (var l in list)
                 this.list.Add(l);
-            //this.list.DefaultCompletionString = "System.Exception";
             this.list.AddKeyHandler(new NullDotKeyHandler ());
         }
 
