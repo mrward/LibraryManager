@@ -27,6 +27,11 @@
                 _description=""
                 _label="Restore Client-Side Libraries"
                 defaultHandler="MonoDevelop.LibraryManager.Commands.RestoreLibrariesHandler" />
+            <Command
+                id="MonoDevelop.LibraryManager.Commands.RestoreLibrariesInProject"
+                _description=""
+                _label="Restore Client-Side Libraries"
+                defaultHandler="MonoDevelop.LibraryManager.Commands.RestoreLibrariesInProjectHandler" />
         </Category>
     </Extension>
 
@@ -56,6 +61,16 @@
                 id="MonoDevelop.LibraryManager.Commands.RestoreLibraries"
                 insertafter="AddSectionEnd"
                 insertbefore="ToolsSectionStart" />
+        </Condition>
+        <Condition id="ItemType" value="ProjectFile">
+            <SeparatorItem
+                id="RestoreLibrariesInProjectSeparator"
+                insertafter="OpenSeparator"
+                insertbefore="ActionsSectionEnd" />
+            <CommandItem
+                id="MonoDevelop.LibraryManager.Commands.RestoreLibrariesInProject"
+                insertafter="OpenSeparator"
+                insertbefore="ActionsSectionEnd" />
         </Condition>
     </Extension>
 

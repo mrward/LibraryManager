@@ -45,7 +45,8 @@ namespace Microsoft.Web.LibraryManager.Vsix
             }
         }
 
-        internal static Task<ProjectFolder> GetSelectedItemAsync()
+        internal static Task<T> GetSelectedItemAsync<T>()
+            where T : class
         {
             var pad = IdeApp.Workbench.Pads.FirstOrDefault(p => p.Id == "ProjectPad");
             var solutionPad = pad?.Content as SolutionPad;
@@ -54,14 +55,14 @@ namespace Microsoft.Web.LibraryManager.Vsix
                 return null;
             }
 
-            ProjectFolder folder = null;
+            T item = null;
             if (!solutionPad.TreeView.MultipleNodesSelected())
             {
                 var node = solutionPad.TreeView.GetSelectedNode();
-                folder = node.DataItem as ProjectFolder;
+                item = node.DataItem as T;
             }
 
-            return Task.FromResult(folder);
+            return Task.FromResult(item);
         }
 
         public static Task<Project> GetProjectOfSelectedItemAsync()

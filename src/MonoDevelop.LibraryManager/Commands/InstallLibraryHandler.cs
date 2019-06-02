@@ -51,7 +51,7 @@ namespace MonoDevelop.LibraryManager.Commands
 
         async Task RunAsync()
         {
-            ProjectFolder item = await VsHelpers.GetSelectedItemAsync().ConfigureAwait(false);
+            ProjectFolder item = await VsHelpers.GetSelectedItemAsync<ProjectFolder>().ConfigureAwait(false);
             Project project = await VsHelpers.GetProjectOfSelectedItemAsync().ConfigureAwait(false);
 
             if (project != null)

@@ -84,6 +84,7 @@
     <Compile Include="UI\Models\BindLibraryNameToTargetLocation.cs" />
     <Compile Include="Shared\LibraryManagerService.cs" />
     <Compile Include="Commands\RestoreLibrariesHandler.cs" />
+    <Compile Include="Commands\RestoreLibrariesInProjectHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\LibraryManager.addin.xml">
