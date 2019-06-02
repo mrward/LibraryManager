@@ -22,12 +22,18 @@
                 _description=""
                 _label="Client-Side Library..."
                 defaultHandler="MonoDevelop.LibraryManager.Commands.InstallLibraryHandler" />
+            <Command
+                id="MonoDevelop.LibraryManager.Commands.RestoreLibraries"
+                _description=""
+                _label="Restore Client-Side Libraries"
+                defaultHandler="MonoDevelop.LibraryManager.Commands.RestoreLibrariesHandler" />
         </Category>
     </Extension>
 
     <Extension path="/MonoDevelop/Ide/MainMenu/Project">
         <SeparatorItem insertafter="MonoDevelop.Ide.Commands.ProjectCommands.AddReference" />
         <CommandItem id="MonoDevelop.LibraryManager.Commands.ManageLibraries" />
+        <CommandItem id="MonoDevelop.LibraryManager.Commands.RestoreLibraries" />
     </Extension>
 
     <Extension path="/MonoDevelop/Ide/ContextMenu/ProjectPad">
@@ -40,6 +46,16 @@
                 id="MonoDevelop.LibraryManager.Commands.ManageLibraries"
                 insertafter="ManageLibrariesSeparator"
                 insertbefore="MonoDevelop.Ide.Commands.ProjectCommands.CustomCommandList" />
+        </Condition>
+        <Condition id="ItemType" value="Solution">
+            <SeparatorItem
+                id="RestoreLibrariesSeparator"
+                insertafter="AddSectionEnd"
+                insertbefore="ToolsSectionStart" />
+            <CommandItem
+                id="MonoDevelop.LibraryManager.Commands.RestoreLibraries"
+                insertafter="AddSectionEnd"
+                insertbefore="ToolsSectionStart" />
         </Condition>
     </Extension>
 

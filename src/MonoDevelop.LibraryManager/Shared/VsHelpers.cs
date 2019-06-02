@@ -226,22 +226,21 @@ namespace Microsoft.Web.LibraryManager.Vsix
             return false;
         }
 
-        //public static async Task<bool> SolutionContainsManifestFileAsync(IVsSolution solution)
-        //{
-        //    IEnumerable<IVsHierarchy> hierarchies = GetProjectsInSolution(solution, __VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION);
+        public static async Task<bool> SolutionContainsManifestFileAsync(Solution solution)
+        {
+            if (solution == null)
+                return false;
 
-        //    foreach (IVsHierarchy hierarchy in hierarchies)
-        //    {
-        //        Project project = GetDTEProject(hierarchy);
+             foreach (Project project in solution.GetAllProjects())
+             {
+                 if (project != null && await ProjectContainsManifestFileAsync(project))
+                 {
+                     return true;
+                 }
+            }
 
-        //        if (project != null && await ProjectContainsManifestFileAsync(project))
-        //        {
-        //            return true;
-        //        }
-        //    }
-
-        //    return false;
-        //}
+            return false;
+        }
 
         //public static IEnumerable<IVsHierarchy> GetProjectsInSolution(IVsSolution solution, __VSENUMPROJFLAGS flags)
         //{

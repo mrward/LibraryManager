@@ -34,6 +34,7 @@ namespace MonoDevelop.LibraryManager.Vsix
     {
         static LibraryManagerService()
         {
+            LibraryCommandService = new LibraryCommandService();
             IdeApp.Workspace.LastWorkspaceItemClosed += LastWorkspaceItemClosed;
         }
 
@@ -45,5 +46,7 @@ namespace MonoDevelop.LibraryManager.Vsix
         {
             Logger.ClearOutputWindow();
         }
+
+        public static ILibraryCommandService LibraryCommandService { get; private set; }
     }
 }

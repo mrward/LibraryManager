@@ -43,8 +43,6 @@ namespace MonoDevelop.LibraryManager.Commands
 {
     class InstallLibraryHandler : CommandHandler
     {
-        ILibraryCommandService libraryCommandService = new LibraryCommandService();
-
         protected override void Run ()
         {
             LibraryManagerService.Initialize();
@@ -99,7 +97,7 @@ namespace MonoDevelop.LibraryManager.Commands
 
                 Runtime.RunInMainThread(() =>
                 {
-                    using (var dialog = new UI.InstallDialog(dependencies, libraryCommandService, configFilePath, target, rootFolder, project))
+                    using (var dialog = new UI.InstallDialog(dependencies, LibraryManagerService.LibraryCommandService, configFilePath, target, rootFolder, project))
                     {
                         WindowFrame parent = Toolkit.CurrentEngine.WrapWindow(IdeApp.Workbench.RootWindow);
                         dialog.Run(parent);
