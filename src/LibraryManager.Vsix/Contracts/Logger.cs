@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Web.LibraryManager.Contracts;
 using Microsoft.Web.LibraryManager.Logging;
 using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using MonoDevelop.LibraryManager.UI;
 
 namespace Microsoft.Web.LibraryManager.Vsix
@@ -193,12 +194,12 @@ namespace Microsoft.Web.LibraryManager.Vsix
 
         private static void LogToStatusBar(string message)
         {
-            //ThreadHelper.Generic.BeginInvoke(() =>
-            //{
-            //    Statusbar.FreezeOutput(0);
-            //    Statusbar.SetText(message);
-            //    Statusbar.FreezeOutput(1);
-            //});
+            Runtime.RunInMainThread(() =>
+            {
+                IdeApp.Workbench.StatusBar.ShowMessage(message);
+                var pad = IdeApp.Workbench.GetPad<LibraryManagerOutputPad>();
+                IdeApp.Workbench.StatusBar.SetMessageSourcePad(pad);
+            }).Ignore();
         }
 
         private static void LogToOutputWindow(object message)

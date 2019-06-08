@@ -24,27 +24,64 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TaskStatusCenter;
+using MonoDevelop.Core;
+using MonoDevelop.Ide;
+using MonoDevelop.Ide.Gui;
+using MonoDevelop.LibraryManager.UI;
 
 namespace MonoDevelop.LibraryManager.Tasks
 {
     class TaskHandler : ITaskHandler
     {
-        readonly string taskTitle;
         Task task;
+        ProgressMonitor monitor;
 
         public TaskHandler(string taskTitle)
         {
-            this.taskTitle = taskTitle;
+            var pad = IdeApp.Workbench.GetPad<LibraryManagerOutputPad>();
+            monitor = IdeApp.Workbench.ProgressMonitors.GetStatusProgressMonitor(
+                taskTitle,
+                Stock.StatusSolutionOperation,
+                false,
+                true,
+                false,
+                pad,
+                true);
         }
 
-        public CancellationToken UserCancellation { get; set; }
+        public CancellationToken UserCancellation
+        {
+            get { return monitor.CancellationToken; }
+        }
 
         public void RegisterTask(Task task)
         {
             this.task = task;
+            task.ContinueWith(t => OnTaskCompleted(t), TaskScheduler.Default)
+                .Ignore();
+        }
+
+        void OnTaskCompleted(Task task)
+        {
+            try
+            {
+                if (task.Exception != null)
+                {
+                    monitor.ReportError(task.Exception.Message, task.Exception);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.LogError("TaskHandler error", ex);
+            }
+            finally
+            {
+                monitor.Dispose();
+            }
         }
     }
 }

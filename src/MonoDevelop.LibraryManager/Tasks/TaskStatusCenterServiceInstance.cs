@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System.Threading.Tasks;
+using MonoDevelop.Core;
 using MonoDevelop.LibraryManager.Tasks;
 
 namespace Microsoft.VisualStudio.TaskStatusCenter
@@ -33,8 +34,11 @@ namespace Microsoft.VisualStudio.TaskStatusCenter
     {
         public static Task<ITaskHandler> CreateTaskHandlerAsync(string taskTitle)
         {
-            ITaskHandler handler = new TaskHandler(taskTitle);
-            return Task.FromResult(handler);
+            return Runtime.RunInMainThread(() =>
+            {
+                ITaskHandler handler = new TaskHandler(taskTitle);
+                return handler;
+            });
         }
     }
 }
