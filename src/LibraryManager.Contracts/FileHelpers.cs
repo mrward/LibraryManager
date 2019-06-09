@@ -269,7 +269,7 @@ namespace Microsoft.Web.LibraryManager.Contracts
         /// <param name="folderPaths"></param>
         /// <param name="rootDirectory"></param>
         /// <returns></returns>
-        private static bool DeleteEmptyFoldersFromDisk(IEnumerable<string> folderPaths, string rootDirectory)
+        public static bool DeleteEmptyFoldersFromDisk(IEnumerable<string> folderPaths, string rootDirectory)
         {
             if (folderPaths.Count() == 0)
             {

@@ -16,7 +16,7 @@ namespace Microsoft.Web.LibraryManager.Vsix.Contracts
             {
                 if (string.IsNullOrEmpty(_projectName))
                 {
-                    string projectName = VsHelpers.GetDTEProjectFromConfig(_configFileName)?.Name;
+                    string projectName = VsHelpers.GetProjectFromConfig(_configFileName)?.Name;
                     _projectName = string.IsNullOrEmpty(projectName) ? string.Empty : $" ({projectName})";
                 }
 

@@ -165,7 +165,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
 
                 string configFileName = configProjectItem.FilePath;
                 var dependencies = Dependencies.FromConfigFile(configFileName);
-                Project project = VsHelpers.GetDTEProjectFromConfig(configFileName);
+                Project project = VsHelpers.GetProjectFromConfig(configFileName);
 
                 Manifest manifest = await Manifest.FromFileAsync(configFileName, dependencies, CancellationToken.None).ConfigureAwait(false);
                 IEnumerable<ILibraryOperationResult> results = new List<ILibraryOperationResult>();
@@ -213,7 +213,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
                     Stopwatch swLocal = new Stopwatch();
                     swLocal.Start();
                     IDependencies dependencies = Dependencies.FromConfigFile(manifest.Key);
-                    Project project = VsHelpers.GetDTEProjectFromConfig(manifest.Key);
+                    Project project = VsHelpers.GetProjectFromConfig(manifest.Key);
 
                     Logger.LogEvent(string.Format(LibraryManager.Resources.Text.Restore_LibrariesForProject, project?.Name), LogLevel.Operation);
 

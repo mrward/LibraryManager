@@ -79,7 +79,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
             }
 
             //Delete from project
-            Project project = VsHelpers.GetDTEProjectFromConfig(_configFilePath);
+            Project project = VsHelpers.GetProjectFromConfig(_configFilePath);
             bool isCoreProject = await VsHelpers.IsDotNetCoreWebProjectAsync(project);
 
             if (!isCoreProject)
