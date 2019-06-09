@@ -27,6 +27,7 @@
 using System;
 using Microsoft.Web.LibraryManager.Vsix;
 using MonoDevelop.Ide;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.LibraryManager.Vsix
 {
@@ -48,5 +49,24 @@ namespace MonoDevelop.LibraryManager.Vsix
         }
 
         public static ILibraryCommandService LibraryCommandService { get; private set; }
+
+        public static bool IsSupportedProject (Project project)
+        {
+            if (project == null)
+                return false;
+
+            if (VsHelpers.IsDotNetCoreWebProject(project))
+                return true;
+
+            if (project.IsKind(SupportedFlavorGuids))
+                return true;
+
+            return VsHelpers.ProjectContainsManifestFile(project);
+        }
+
+        static string[] SupportedFlavorGuids =
+        {
+            "{349C5851-65DF-11DA-9384-00065B846F21}"
+        };
     }
 }

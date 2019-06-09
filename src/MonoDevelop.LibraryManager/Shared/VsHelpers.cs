@@ -113,6 +113,12 @@ namespace Microsoft.Web.LibraryManager.Vsix
 
         public static Task<string> GetRootFolderAsync(this Project project)
         {
+            string folder = project.GetRootFolder();
+            return Task.FromResult(folder);
+        }
+
+        public static string GetRootFolder(this Project project)
+        {
             if (project == null)
             {
                 return null;
@@ -123,33 +129,42 @@ namespace Microsoft.Web.LibraryManager.Vsix
             if (File.Exists(fullPath))
             {
                 string folder = Path.GetDirectoryName(fullPath);
-                return Task.FromResult(folder);
+                return folder;
             }
 
             return null;
         }
 
-        //public static bool IsKind(this Project project, params string[] kindGuids)
-        //{
-        //    foreach (string guid in kindGuids)
-        //    {
-        //        if (project.Kind.Equals(guid, StringComparison.OrdinalIgnoreCase))
-        //        {
-        //            return true;
-        //        }
-        //    }
+        public static bool IsKind(this Project project, params string[] kindGuids)
+        {
+            foreach (string guid in kindGuids)
+            {
+                foreach (string projectGuid in project.FlavorGuids)
+                {
+                    if (StringComparer.OrdinalIgnoreCase.Equals(projectGuid, guid))
+                    {
+                        return true;
+                    }
+                }
+            }
 
-        //    return false;
-        //}
+            return false;
+        }
 
         public static Task<bool> IsDotNetCoreWebProjectAsync(Project project)
         {
+            bool result = IsDotNetCoreWebProject(project);
+            return Task.FromResult(false);
+        }
+
+        public static bool IsDotNetCoreWebProject(Project project)
+        {
             if (project == null || IsCapabilityMatch(project, Constants.DotNetCoreWebCapability))
             {
-                return Task.FromResult(true);
+                return true;
             }
 
-            return Task.FromResult(false);
+            return false;
         }
 
         public static async Task<bool> DeleteFilesFromProjectAsync(Project project, IEnumerable<string> filePaths, Action<string, LogLevel> logAction, CancellationToken cancellationToken)
@@ -196,12 +211,18 @@ namespace Microsoft.Web.LibraryManager.Vsix
             //}
         }
 
-        public static async Task<bool> ProjectContainsManifestFileAsync(Project project)
+        public static Task<bool> ProjectContainsManifestFileAsync(Project project)
         {
-            string rootPath = await GetRootFolderAsync(project);
-            string configFilePath = Path.Combine(rootPath, Constants.ConfigFileName);
+            bool result = ProjectContainsManifestFile(project);
+            return Task.FromResult(result);
+        }
 
-            if (File.Exists(configFilePath))
+        public static bool ProjectContainsManifestFile(Project project)
+        {
+            string rootPath = GetRootFolder(project);
+            string configFilePath = Path.Combine (rootPath, Constants.ConfigFileName);
+
+            if (File.Exists (configFilePath))
             {
                 return true;
             }

@@ -41,6 +41,12 @@ namespace MonoDevelop.LibraryManager.Commands
 {
     public class ManageLibrariesHandler : CommandHandler
     {
+        protected override void Update (CommandInfo info)
+        {
+            Project project = IdeApp.ProjectOperations.CurrentSelectedProject;
+            info.Visible = LibraryManagerService.IsSupportedProject(project);
+        }
+
         protected override void Run()
         {
             LibraryManagerService.Initialize();
