@@ -32,6 +32,11 @@
                 _description=""
                 _label="Restore Client-Side Libraries"
                 defaultHandler="MonoDevelop.LibraryManager.Commands.RestoreLibrariesInProjectHandler" />
+            <Command
+                id="MonoDevelop.LibraryManager.Commands.CleanLibrariesInProject"
+                _description=""
+                _label="Clean Client-Side Libraries"
+                defaultHandler="MonoDevelop.LibraryManager.Commands.CleanLibrariesInProjectHandler" />
         </Category>
     </Extension>
 
@@ -69,6 +74,10 @@
                 insertbefore="ActionsSectionEnd" />
             <CommandItem
                 id="MonoDevelop.LibraryManager.Commands.RestoreLibrariesInProject"
+                insertafter="OpenSeparator"
+                insertbefore="ActionsSectionEnd" />
+            <CommandItem
+                id="MonoDevelop.LibraryManager.Commands.CleanLibrariesInProject"
                 insertafter="OpenSeparator"
                 insertbefore="ActionsSectionEnd" />
         </Condition>
