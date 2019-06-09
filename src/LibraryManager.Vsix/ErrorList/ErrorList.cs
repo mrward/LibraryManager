@@ -7,14 +7,18 @@ using System.IO;
 using System.Linq;
 using Microsoft.Web.LibraryManager.Contracts;
 using Microsoft.Web.LibraryManager.LibraryNaming;
+using MonoDevelop.Core;
+using MonoDevelop.Ide.Tasks;
+using MonoDevelop.Projects;
 
 namespace Microsoft.Web.LibraryManager.Vsix
 {
     internal class ErrorList
     {
-        public ErrorList(string projectName, string configFileName)
+        public ErrorList(Project project, string configFileName)
         {
-            ProjectName = projectName ?? "";
+            Project = project;
+            ProjectName = project?.Name ?? "";
             ConfigFileName = configFileName;
             Errors = new List<DisplayError>();
         }
@@ -22,10 +26,11 @@ namespace Microsoft.Web.LibraryManager.Vsix
         public string ProjectName { get; set; }
         public string ConfigFileName { get; set; }
         public List<DisplayError> Errors { get; }
+        public Project Project { get; set; }
 
         public bool HandleErrors(IEnumerable<ILibraryOperationResult> results)
         {
-            IEnumerable<string> json = File.Exists(ConfigFileName) ? File.ReadLines(ConfigFileName) : Array.Empty<string>();
+            IEnumerable<string> json = File.Exists(ConfigFileName) ? File.ReadLines(ConfigFileName).ToArray() : Array.Empty<string>();
 
             foreach (ILibraryOperationResult result in results)
             {
@@ -73,17 +78,42 @@ namespace Microsoft.Web.LibraryManager.Vsix
 
         private void PushToErrorList()
         {
-            TableDataSource.Instance.CleanErrors(ConfigFileName);
-
-            if (Errors.Count > 0)
+            Runtime.RunInMainThread(() =>
             {
-                TableDataSource.Instance.AddErrors(Errors, ProjectName, ConfigFileName);
-            }
+                TaskService.Errors.RemoveFileTasks(ConfigFileName);
+
+                if (Errors.Count > 0)
+                {
+                    foreach (DisplayError error in Errors)
+                    {
+                        var buildError = new BuildError
+                        {
+                            FileName = ConfigFileName,
+
+                            ErrorNumber = error.ErrorCode,
+                            ErrorText = error.Description,
+
+                            Column = error.Column + 1,
+                            Line = error.Line + 1,
+
+                            SourceTarget = Project
+                        };
+
+                        var task = new TaskListEntry(buildError);
+                        task.DocumentationLink = error.HelpLink;
+
+                        TaskService.Errors.Add(task);
+                    }
+                }
+            }).Ignore();
         }
 
         public void ClearErrors()
         {
-            TableDataSource.Instance.CleanErrors(ConfigFileName);
+            Runtime.RunInMainThread(() =>
+            {
+                TaskService.Errors.RemoveFileTasks(ConfigFileName);
+            }).Ignore();
         }
     }
 }

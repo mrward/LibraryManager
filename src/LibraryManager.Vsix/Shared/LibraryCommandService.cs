@@ -177,7 +177,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
                     if (!validationResults.All(r => r.Success))
                     {
                         sw.Stop();
-                        AddErrorsToErrorList(project?.Name, configFileName, validationResults);
+                        AddErrorsToErrorList(project, configFileName, validationResults);
                         Logger.LogErrorsSummary(validationResults, OperationType.Clean);
                     }
                     else
@@ -186,7 +186,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
                         results = await manifest.CleanAsync(async (filesPaths) => await hostInteraction.DeleteFilesAsync(filesPaths, cancellationToken), cancellationToken);
 
                         sw.Stop();
-                        AddErrorsToErrorList(project?.Name, configFileName, results);
+                        AddErrorsToErrorList(project, configFileName, results);
                         Logger.LogEventsSummary(results, OperationType.Clean, sw.Elapsed);
                     }
                 }
@@ -221,7 +221,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
                     if (!validationResults.All(r => r.Success))
                     {
                         swLocal.Stop();
-                        AddErrorsToErrorList(project?.Name, manifest.Key, validationResults);
+                        AddErrorsToErrorList(project, manifest.Key, validationResults);
                         Logger.LogErrorsSummary(validationResults, OperationType.Restore, false);
                     }
                     else
@@ -230,7 +230,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
                         await AddFilesToProjectAsync(manifest.Key, project, results.Where(r =>r.Success && !r.UpToDate), cancellationToken).ConfigureAwait(false);
 
                         swLocal.Stop();
-                        AddErrorsToErrorList(project?.Name, manifest.Key, results);
+                        AddErrorsToErrorList(project, manifest.Key, results);
                         Logger.LogEventsSummary(results, OperationType.Restore, swLocal.Elapsed, false);
                     }
                 }
@@ -310,10 +310,10 @@ namespace Microsoft.Web.LibraryManager.Vsix
             return string.Empty;
         }
 
-        private void AddErrorsToErrorList(string projectName, string configFile, IEnumerable<ILibraryOperationResult> results)
+        private void AddErrorsToErrorList(Project project, string configFile, IEnumerable<ILibraryOperationResult> results)
         {
-            //var errorList = new ErrorList(projectName, configFile);
-            //errorList.HandleErrors(results);
+            var errorList = new ErrorList(project, configFile);
+            errorList.HandleErrors(results);
         }
 
         private async Task AddFilesToProjectAsync(string configFilePath, Project project, IEnumerable<ILibraryOperationResult> results, CancellationToken cancellationToken)

@@ -86,6 +86,12 @@
     <Compile Include="Commands\RestoreLibrariesHandler.cs" />
     <Compile Include="Commands\RestoreLibrariesInProjectHandler.cs" />
     <Compile Include="Commands\CleanLibrariesInProjectHandler.cs" />
+    <Compile Include="..\LibraryManager.Vsix\ErrorList\ErrorList.cs">
+      <Link>ErrorList\ErrorList.cs</Link>
+    </Compile>
+    <Compile Include="..\LibraryManager.Vsix\ErrorList\DisplayError.cs">
+      <Link>ErrorList\DisplayError.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\LibraryManager.addin.xml">

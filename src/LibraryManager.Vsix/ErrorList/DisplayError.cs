@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.VisualStudio.Imaging;
-using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.Web.LibraryManager.Contracts;
 
 namespace Microsoft.Web.LibraryManager.Vsix
@@ -32,7 +30,5 @@ namespace Microsoft.Web.LibraryManager.Vsix
 
         /// <summary>The column number containing the error.</summary>
         public int Column { get; set; } = 0;
-
-        public ImageMoniker Moniker => KnownMonikers.StatusWarning;
     }
 }
