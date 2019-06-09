@@ -81,7 +81,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
             {
                 await Runtime.RunInMainThread (async () =>
                 {
-                    project.AddFile(file);
+                    project.AddFile(file, BuildAction.None);
                     await project.SaveAsync(new ProgressMonitor()).ConfigureAwait(false);
                 }).ConfigureAwait(false);
             }
