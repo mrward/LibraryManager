@@ -35,5 +35,5 @@ using Mono.Addins;
 [assembly:AddinName ("Library Manager")]
 [assembly:AddinDescription ("Microsoft Library Manager. Install and consume 3rd-party client-side libraries. https://github.com/aspnet/LibraryManager")]
 
-[assembly:AddinDependency ("Core", "8.0")]
-[assembly:AddinDependency ("Ide", "8.0")]
+[assembly:AddinDependency ("Core", "8.1")]
+[assembly:AddinDependency ("Ide", "8.1")]

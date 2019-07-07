@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Web.LibraryManager.Contracts;
 using Microsoft.Web.LibraryManager.LibraryNaming;
 using MonoDevelop.Core;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.Tasks;
 using MonoDevelop.Projects;
 
@@ -80,7 +81,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
         {
             Runtime.RunInMainThread(() =>
             {
-                TaskService.Errors.RemoveFileTasks(ConfigFileName);
+                IdeServices.TaskService.Errors.RemoveFileTasks(ConfigFileName);
 
                 if (Errors.Count > 0)
                 {
@@ -102,7 +103,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
                         var task = new TaskListEntry(buildError);
                         task.DocumentationLink = error.HelpLink;
 
-                        TaskService.Errors.Add(task);
+                        IdeServices.TaskService.Errors.Add(task);
                     }
                 }
             }).Ignore();
@@ -112,7 +113,7 @@ namespace Microsoft.Web.LibraryManager.Vsix
         {
             Runtime.RunInMainThread(() =>
             {
-                TaskService.Errors.RemoveFileTasks(ConfigFileName);
+                IdeServices.TaskService.Errors.RemoveFileTasks(ConfigFileName);
             }).Ignore();
         }
     }
