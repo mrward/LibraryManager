@@ -24,5 +24,13 @@
       <Private>False</Private>
       <HintPath>$(MDBinDir)\Xwt.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualStudio.CoreUtility">
+      <Private>False</Private>
+      <HintPath>$(MDBinDir)\Microsoft.VisualStudio.CoreUtility.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.Data">
+      <Private>False</Private>
+      <HintPath>$(MDBinDir)\Microsoft.VisualStudio.Text.Data.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

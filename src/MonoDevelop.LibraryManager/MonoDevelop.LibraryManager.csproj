@@ -92,6 +92,7 @@
     <Compile Include="..\LibraryManager.Vsix\ErrorList\DisplayError.cs">
       <Link>ErrorList\DisplayError.cs</Link>
     </Compile>
+    <Compile Include="Json\LibraryManagerDocumentControllerExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\LibraryManager.addin.xml">

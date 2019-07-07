@@ -107,4 +107,10 @@
             class="MonoDevelop.LibraryManager.UI.LibraryManagerOutputPad"
             _label="Library Manager Output" />
     </Extension>
+
+        <Extension path="/MonoDevelop/Ide/DocumentControllerExtensions">
+        <Type
+            mimeType="*"
+            class="MonoDevelop.LibraryManager.Json.LibraryManagerDocumentControllerExtension" />
+    </Extension>
 </ExtensionModel>
