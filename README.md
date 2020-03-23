@@ -2,10 +2,6 @@
 
 Install and consume 3rd-party client-side libraries with ease.
 
-[![AppVeyor build status][appveyor-badge]](https://ci.appveyor.com/project/aspnetci/librarymanager/branch/master)
-
-[appveyor-badge]: https://img.shields.io/appveyor/ci/aspnetci/librarymanager/master.svg?label=appveyor&style=flat-square
-
 ## Reasons to use LibMan
 1.	For apps not currently using another package manager
 2.	For projects where you think Bower and npm are overkill
@@ -26,37 +22,21 @@ Install and consume 3rd-party client-side libraries with ease.
 - Can install any file into any folder in your project/solution
 - Optional manifest file (`libman.json`)
 - Very fast
-- Full Visual Studio 2017 integration
+- Full Visual Studio for Mac integration
 
-## Getting started
-Right-click any web project in Solution Explorer and hit **Manage Client-side Libraries...**.
+## Installation
 
-![Context menu](art/context-menu-project.png)
+The Library Manager extension is available from the Visual Studio for Mac extensions gallery. To install the extension:
 
-This will create a `libman.json` file in the root of the project.
+ -  From the main menu, open the Extensions Manager dialog.
+ - Select the Gallery tab.
+ - Expand IDE extensions.
+ - Select the Library Manager addin
+ - Click the Refresh button if the addin is not visible.
+ - Click Install… to install the addin.
+ - Restart Visual Studio for Mac.
 
-## libman.json
+## Using Library Manager
 
-### Context menu
-Right-click `libman.json` in Solution Explorer to access commands that help managing the libraries.
+Please read the [LibMan support in Visual Studio for Mac blog post](https://lastexitcode.com/blog/2019/07/13/LibManSupportInVisualStudioMac8-1/)
 
-![context menu libman.json](art/context-menu-config.png)
-
-### Intellisense
-Edit the libman.json file to install libraries. Every time the file is saved, Visual Studio will install/restore the packages.
-
-![libman.json](art/library.json%20typing.gif)
-
-See [libman.json reference](https://github.com/aspnet/LibraryManager/wiki/library.json-reference) for more information.
-
-### Light bulbs
-Inside libman.json there are light bulbs that show up with helpful commands.
-
-![Light bulbs](art/light-bulbs.png)
-
-## Road map and release notes
-See the [CHANGELOG](CHANGELOG.md) for road map and release notes
-
-# Feedback
-
-Check out the [contributing](.github/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
