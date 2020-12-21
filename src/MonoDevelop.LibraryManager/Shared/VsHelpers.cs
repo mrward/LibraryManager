@@ -56,9 +56,9 @@ namespace Microsoft.Web.LibraryManager.Vsix
             }
 
             T item = null;
-            if (!solutionPad.TreeView.MultipleNodesSelected())
+            if (!solutionPad.Controller.MultipleNodesSelected())
             {
-                var node = solutionPad.TreeView.GetSelectedNode();
+                var node = solutionPad.Controller.GetSelectedNode();
                 item = node.DataItem as T;
             }
 

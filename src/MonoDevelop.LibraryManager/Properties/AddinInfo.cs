@@ -29,11 +29,11 @@ using Mono.Addins;
 [assembly:Addin (
     "LibraryManager",
     Namespace = "MonoDevelop",
-    Version = "0.1",
+    Version = "0.2",
     Category = "IDE extensions")]
 
 [assembly:AddinName ("Library Manager")]
 [assembly:AddinDescription ("Microsoft Library Manager. Install and consume 3rd-party client-side libraries. https://github.com/aspnet/LibraryManager")]
 
-[assembly:AddinDependency ("Core", "8.1")]
-[assembly:AddinDependency ("Ide", "8.1")]
+[assembly:AddinDependency ("Core", "8.8")]
+[assembly:AddinDependency ("Ide", "8.8")]
